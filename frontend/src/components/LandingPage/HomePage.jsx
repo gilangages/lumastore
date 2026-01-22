@@ -10,6 +10,7 @@ import { ProductShowcase } from "./Section/ProductShowcase";
 import { FAQ } from "./Section/FAQ";
 import { Footer } from "./Section/Footer";
 import { CheckoutModal } from "../CheckoutModal";
+import { WhatsAppSection } from "./Section/WhatsAppSection";
 
 export const HomePage = () => {
   const [products, setProducts] = useState([]);
@@ -75,6 +76,7 @@ export const HomePage = () => {
         <Benefits />
         <ProductShowcase products={products} loading={loading} onBuy={handleOpenModal} />
         <FAQ />
+        <WhatsAppSection />
       </div>
 
       <Footer />

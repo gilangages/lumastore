@@ -8,10 +8,11 @@ export const CheckoutModal = ({ isOpen, onClose, product, onSubmit }) => {
 
   if (!isOpen || !product) return null;
 
+  const jumlahGambar = 8;
   // SIMULASI GALERI:
   // Karena databasemu cuma punya 1 gambar, kita duplikasi biar fitur gesernya kelihatan.
   // Nanti ganti ini dengan array gambar asli dari backend.
-  const images = [product.image_url, product.image_url, product.image_url];
+  const images = Array(jumlahGambar).fill(product.image_url);
 
   const nextImage = () => setCurrentImgIdx((prev) => (prev + 1) % images.length);
   const prevImage = () => setCurrentImgIdx((prev) => (prev - 1 + images.length) % images.length);

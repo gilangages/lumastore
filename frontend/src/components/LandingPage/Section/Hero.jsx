@@ -22,7 +22,8 @@ export const Hero = () => {
       <div className="flex flex-col sm:flex-row justify-center gap-4">
         <a
           href="#products"
-          className="bg-[#3E362E] text-[#FDFCF8] px-8 py-3 rounded-xl font-bold hover:-translate-y-1 hover:shadow-lg transition-all">
+          // Class ini dicopy persis dari Navbar button
+          className="bg-[#3E362E] text-[#FDFCF8] px-8 py-3 rounded-lg font-bold hover:bg-[#8DA399] hover:-translate-y-0.5 transition-all shadow-[3px_3px_0px_0px_rgba(141,163,153,1)]">
           Lihat Karyaku 👇
         </a>
       </div>
