@@ -1,9 +1,9 @@
-import { Printer, Infinity, PenTool } from "lucide-react";
+import { Printer, Infinity as InfinityIcon, PenTool } from "lucide-react";
 
 export const Benefits = () => {
   const items = [
     {
-      icon: <Infinity size={32} />,
+      icon: <InfinityIcon size={32} />,
       title: "Sekali Beli, Print Selamanya",
       desc: "File digital jadi milikmu selamanya. Mau print 1 kali atau 100 kali? Bebas! Hemat kertas, hemat biaya.",
     },
