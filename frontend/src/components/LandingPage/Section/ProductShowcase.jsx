@@ -4,7 +4,7 @@ import { Sparkles } from "lucide-react";
 export const ProductShowcase = ({ products, loading, onBuy }) => {
   return (
     <main id="products" className="max-w-6xl mx-auto px-6 py-16">
-      {/* HEADER: RATA TENGAH (Paling Aman & Rapi) */}
+      {/* HEADER: RATA TENGAH */}
       <div className="text-center mb-12">
         <span className="bg-[#EAE7DF] text-[#3E362E] px-4 py-1.5 rounded-full text-xs font-bold border border-[#E5E0D8] inline-block mb-3">
           Update Terbaru
@@ -24,7 +24,7 @@ export const ProductShowcase = ({ products, loading, onBuy }) => {
         </div>
       ) : (
         <div className="flex flex-col items-center">
-          {/* GRID PRODUK (Flex Center) */}
+          {/* GRID PRODUK */}
           <div className="flex flex-wrap justify-center gap-8 w-full mb-16">
             {products.length > 0 ? (
               products.map((product) => (
@@ -37,15 +37,19 @@ export const ProductShowcase = ({ products, loading, onBuy }) => {
             )}
           </div>
 
-          {/* INFO COMING SOON (Animasi Muncul saat Scroll/View) */}
-          {/* Kita buat simpel saja: Kotak pesan kecil di bawah grid */}
-          <div className="bg-[#FDFCF8] border-2 border-dashed border-[#E5E0D8] px-8 py-6 rounded-2xl flex flex-col md:flex-row items-center gap-4 text-center md:text-left max-w-2xl animate-fade-in-up">
-            <div className="bg-[#EAE7DF] p-3 rounded-full text-[#3E362E]">
-              <Sparkles size={24} />
+          {/* INFO COMING SOON (REVISI) */}
+          {/* Tidak pakai animasi scroll, tapi desain dibuat menarik & santai */}
+          <div className="w-full max-w-2xl bg-[#FDFCF8] border-2 border-dashed border-[#E5E0D8] px-8 py-8 rounded-3xl flex flex-col md:flex-row items-center gap-6 text-center md:text-left hover:border-[#8DA399] transition-colors shadow-sm">
+            <div className="bg-[#EAE7DF] p-4 rounded-full text-[#3E362E] shrink-0">
+              <Sparkles size={28} />
             </div>
             <div>
-              <h4 className="font-bold text-[#3E362E]">Nungguin Tema Baru?</h4>
-              <p className="text-sm text-[#6B5E51]">Aku lagi gambar stiker baru nih. Cek lagi minggu depan ya!</p>
+              <h4 className="font-bold text-xl text-[#3E362E] mb-1">Karya Berikutnya...</h4>
+              {/* TEKS SANTAI: Tidak janji kapan, tapi memberi harapan */}
+              <p className="text-[#6B5E51] leading-relaxed">
+                Aku lagi nyiapin tema-tema baru yang lebih seru nih. Pantengin terus ya, siapa tau ada yang cocok sama
+                seleramu nanti! ✨
+              </p>
             </div>
           </div>
         </div>
