@@ -1,130 +1,96 @@
 import { useEffect, useState } from "react";
-import { getProducts } from "../../lib/api/ProductApi";
 import { purchaseProduct } from "../../lib/api/PaymentApi";
+import { Navbar } from "./Section/Navbar";
+import { ProductCard } from "./Section/ProductCard";
+import { getProducts } from "./../../lib/api/ProductApi";
 
-export const HomePage = () => {
-  // <--- Nama komponen sesuai nama file
+export function HomePage() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // 1. Load Snap JS (Sama kayak sebelumnya)
+  // 1. Load Snap Script
   useEffect(() => {
-    const snapScript = "https://app.sandbox.midtrans.com/snap/snap.js";
-    const clientKey = "Mid-client-9k6P5r8pEQkQaEan"; // Ganti Client Key kamu
-
+    const clientKey = "Mid-client-9k6P5r8pEQkQaEan"; // Ganti Client Key Asli!
     const script = document.createElement("script");
-    script.src = snapScript;
+    script.src = "https://app.sandbox.midtrans.com/snap/snap.js";
     script.setAttribute("data-client-key", clientKey);
     script.async = true;
     document.body.appendChild(script);
-
-    return () => {
-      document.body.removeChild(script);
-    };
+    return () => document.body.removeChild(script);
   }, []);
 
-  // 2. Fetch Data Produk (Otomatis saat dibuka)
+  // 2. Fetch Data
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await getProducts();
-        if (!response.ok) throw new Error("Gagal fetch data");
-
-        const json = await response.json();
-        setProducts(json.data); // Ambil array data dari backend
-      } catch (err) {
-        console.error(err);
-        alert("Gagal mengambil data produk!");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
+    getProducts()
+      .then((res) => res.json())
+      .then((json) => setProducts(json.data || []))
+      .catch((err) => console.error(err))
+      .finally(() => setLoading(false));
   }, []);
 
-  // 3. Handle Beli (Menunggu Klik User)
+  // 3. Logic Beli
   const handleBuy = async (product) => {
-    const customerName = prompt("Masukkan Nama:", "User Luma");
-    const customerEmail = prompt("Masukkan Email:", "user@example.com");
-
-    if (!customerName || !customerEmail) return;
+    // Nanti bisa diganti Modal Input yang lebih cantik, sementara prompt dulu gpp
+    const name = prompt("Nama Kamu:");
+    const email = prompt("Email Kamu:");
+    if (!name || !email) return;
 
     try {
-      const response = await purchaseProduct({
+      const res = await purchaseProduct({
         product_id: product.id,
-        customer_name: customerName,
-        customer_email: customerEmail,
+        customer_name: name,
+        customer_email: email,
       });
+      const data = await res.json();
 
-      // Backend kita mereturn object langsung (setelah .json() di api wrapper)
-      // atau response.token kalau pakai fetch manual yang sudah di-json-kan.
-      const data = await response.json();
-
-      console.log("Response Backend:", data); // <--- Cek ini di Console Browser!
-
-      // --- CEK APAKAH TOKEN ADA? ---
-      if (!data.token) {
-        alert("Gagal: " + (data.message || "Token tidak ditemukan"));
-        return; // <--- BERHENTI DI SINI, JANGAN LANJUT KE SNAP
-      }
-
-      if (window.snap) {
+      if (data.token && window.snap) {
         window.snap.pay(data.token, {
-          // Tambahkan console.log agar 'result' terpakai
-          onSuccess: (result) => {
-            console.log("Sukses:", result);
-            alert("Bayar Sukses!");
-          },
-          onPending: (result) => {
-            console.log("Pending:", result);
-            alert("Menunggu Pembayaran");
-          },
-          onError: (result) => {
-            console.log("Error:", result);
-            alert("Bayar Gagal");
-          },
-          onClose: () => {
-            alert("Kamu menutup popup");
-          },
+          onSuccess: () => alert("Pembayaran Berhasil! Cek email kamu."),
+          onPending: () => alert("Menunggu pembayaran..."),
+          onError: () => alert("Pembayaran gagal."),
         });
       }
     } catch (error) {
-      alert("Error Transaksi: " + error.message);
+      alert("Error: " + error.message);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10 px-4 font-sans">
-      <div className="max-w-4xl mx-auto">
-        <h2 className="text-3xl font-bold text-center mb-8 text-gray-800">Test Landing Page</h2>
+    <div className="min-h-screen bg-gray-50 font-sans text-gray-900 selection:bg-indigo-100">
+      <Navbar />
+
+      {/* HERO SECTION */}
+      <section className="pt-32 pb-20 px-4 text-center max-w-4xl mx-auto">
+        <h1 className="text-5xl md:text-6xl font-extrabold text-gray-900 mb-6 tracking-tight">
+          Aset Digital Premium untuk <span className="text-indigo-600">Kreator.</span>
+        </h1>
+        <p className="text-xl text-gray-500 mb-8 max-w-2xl mx-auto">
+          Tingkatkan kualitas karyamu dengan koleksi aset pilihan. Download instan, harga terjangkau, kualitas terbaik.
+        </p>
+      </section>
+
+      {/* PRODUCTS GRID */}
+      <main className="max-w-6xl mx-auto px-4 pb-24">
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-2xl font-bold">Koleksi Terbaru</h2>
+          <span className="text-sm text-gray-500">{products.length} Items</span>
+        </div>
 
         {loading ? (
-          <p className="text-center">Loading...</p>
+          <div className="text-center py-20 animate-pulse text-gray-400">Loading produk keren...</div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {products.map((product) => (
-              <div key={product.id} className="bg-white p-4 rounded-lg shadow hover:shadow-lg transition">
-                <img
-                  src={product.image_url}
-                  alt={product.name}
-                  className="w-full h-40 object-cover rounded-md mb-4 bg-gray-200"
-                />
-                <h3 className="font-bold text-lg mb-1">{product.name}</h3>
-                <p className="text-gray-500 text-sm mb-4">{product.description}</p>
-
-                <div className="flex justify-between items-center">
-                  <span className="text-blue-600 font-bold">Rp {parseInt(product.price).toLocaleString("id-ID")}</span>
-                  <button
-                    onClick={() => handleBuy(product)}
-                    className="bg-indigo-600 text-white px-4 py-2 rounded text-sm hover:bg-indigo-700">
-                    Beli
-                  </button>
-                </div>
-              </div>
+              <ProductCard key={product.id} product={product} onBuy={handleBuy} />
             ))}
           </div>
         )}
-      </div>
+      </main>
+
+      {/* FOOTER SIMPLE */}
+      <footer className="bg-white border-t border-gray-100 py-10 text-center text-gray-400 text-sm">
+        &copy; 2024 Luma Store. All rights reserved.
+      </footer>
     </div>
   );
-};
+}
