@@ -49,7 +49,7 @@ export const HomePage = () => {
     }
 
     // 3. Setup Snap Midtrans
-    const clientKey = "SB-Mid-client-XXXXXXXXXXXXXXXX"; // GANTI KEY KAMU
+    const clientKey = "Mid-client-9k6P5r8pEQkQaEan"; // GANTI KEY KAMU
     const script = document.createElement("script");
     script.src = "https://app.sandbox.midtrans.com/snap/snap.js";
     script.setAttribute("data-client-key", clientKey);
@@ -89,9 +89,9 @@ export const HomePage = () => {
             // Simpan tanda sukses
             localStorage.setItem("paymentSuccess", "true");
             // Reload halaman (opsional, tapi bagus untuk memastikan cart/state bersih)
-            // window.location.reload();
             // Atau kalau mau manual tanpa reload:
-            setIsSuccessOpen(true);
+            // setIsSuccessOpen(true);
+            window.location.reload();
           },
           onPending: (result) => {
             console.log("Pending Result:", result);
