@@ -240,11 +240,12 @@
       }
     },
     "/products/{id}": {
-      "delete": {
+      "put": {
         "tags": [
           "Products"
         ],
-        "summary": "Hapus Produk (Admin Only)",
+        "summary": "Update Produk (Admin Only)",
+        "description": "Mengupdate data produk. Kirim gambar baru jika ingin mengganti gambar.",
         "security": [
           {
             "bearerAuth": []
@@ -260,35 +261,31 @@
             }
           }
         ],
-        "responses": {
-          "200": {
-            "description": "Produk Dihapus"
-          },
-          "401": {
-            "description": "Unauthorized"
-          }
-        }
-      }
-    },
-    "/payment/purchase": {
-      "post": {
-        "tags": [
-          "Payment"
-        ],
-        "summary": "Buat Transaksi Snap",
         "requestBody": {
+          "required": true,
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
                 "type": "object",
                 "properties": {
-                  "product_id": {
-                    "type": "integer"
-                  },
-                  "customer_name": {
+                  "name": {
                     "type": "string"
                   },
-                  "customer_email": {
+                  "price": {
+                    "type": "number"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "images": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    },
+                    "description": "Opsional: Upload gambar baru (akan mereplace gambar lama)"
+                  },
+                  "file_url": {
                     "type": "string"
                   }
                 }
@@ -298,20 +295,88 @@
         },
         "responses": {
           "200": {
-            "description": "Success"
+            "description": "Produk Berhasil Diupdate"
+          },
+          "400": {
+            "description": "Input Data Salah"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "delete": {
+          "tags": [
+            "Products"
+          ],
+          "summary": "Hapus Produk (Admin Only)",
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "parameters": [
+            {
+              "in": "path",
+              "name": "id",
+              "required": true,
+              "schema": {
+                "type": "integer"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Produk Dihapus"
+            },
+            "401": {
+              "description": "Unauthorized"
+            }
           }
         }
-      }
-    },
-    "/payment/notification": {
-      "post": {
-        "tags": [
-          "Payment"
-        ],
-        "summary": "Webhook Midtrans",
-        "responses": {
-          "200": {
-            "description": "OK"
+      },
+      "/payment/purchase": {
+        "post": {
+          "tags": [
+            "Payment"
+          ],
+          "summary": "Buat Transaksi Snap",
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "product_id": {
+                      "type": "integer"
+                    },
+                    "customer_name": {
+                      "type": "string"
+                    },
+                    "customer_email": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Success"
+            }
+          }
+        }
+      },
+      "/payment/notification": {
+        "post": {
+          "tags": [
+            "Payment"
+          ],
+          "summary": "Webhook Midtrans",
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
           }
         }
       }

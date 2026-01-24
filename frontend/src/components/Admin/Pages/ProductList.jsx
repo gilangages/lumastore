@@ -16,12 +16,15 @@ export default function ProductList() {
   const fetchProducts = async () => {
     setIsLoading(true);
     try {
-      // Tambahkan timestamp agar browser tidak mengambil data cache
-      const res = await getAllProducts();
+      // 1. Dapatkan response mentah
+      const response = await getAllProducts();
+
+      // 2. Parsing response ke JSON
+      const res = await response.json();
+
       if (res.success) {
         setProducts(res.data);
       } else {
-        // Jika gagal tapi bukan error (misal data kosong dari server)
         setProducts([]);
       }
     } catch (error) {
@@ -80,48 +83,43 @@ export default function ProductList() {
       ) : (
         /* LIST PRODUK */
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Ganti bagian mapping card di ProductList.jsx dengan ini */}
           {filteredProducts.map((product) => (
             <div
               key={product.id}
-              className="bg-white border border-[#e5e0d8] rounded-xl overflow-hidden hover:shadow-lg transition-all group relative">
-              {/* Image Section */}
-              <div className="h-48 bg-gray-100 relative overflow-hidden">
+              className="bg-white p-3 rounded-xl border-2 border-[#E5E0D8] shadow-sm hover:shadow-md transition-all flex flex-col h-full group">
+              {/* Gambar Polaroid */}
+              <div className="aspect-square bg-[#F3F0E9] rounded-lg overflow-hidden mb-3 relative border border-[#E5E0D8]">
                 <img
-                  src={product.image_url || "https://placehold.co/400"}
+                  src={product.image_url}
                   alt={product.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  className="w-full h-full object-cover"
                   onError={(e) => (e.target.src = "https://placehold.co/400?text=Error")}
                 />
-                {product.images && product.images.length > 1 && (
-                  <span className="absolute bottom-2 right-2 text-xs bg-black/60 text-white px-2 py-1 rounded flex items-center gap-1 backdrop-blur-sm">
-                    <ImageIcon size={12} /> +{product.images.length - 1}
-                  </span>
-                )}
+                {/* Badge Harga */}
+                <div className="absolute top-2 right-2 bg-white/90 border border-[#3E362E] text-[#3E362E] text-xs font-bold px-2 py-1 rounded backdrop-blur-sm">
+                  Rp {parseInt(product.price).toLocaleString("id-ID")}
+                </div>
               </div>
 
-              {/* Content Section */}
-              <div className="p-4">
-                <h3 className="font-bold text-[#3e362e] text-lg line-clamp-1" title={product.name}>
-                  {product.name}
-                </h3>
-                <p className="text-[#8da399] font-bold text-lg mb-2">
-                  Rp {parseInt(product.price).toLocaleString("id-ID")}
-                </p>
-                <p className="text-xs text-gray-400 line-clamp-2 mb-4 h-8">{product.description}</p>
+              {/* Info Produk */}
+              <div className="flex-grow">
+                <h3 className="font-bold text-[#3E362E] text-lg leading-tight mb-1">{product.name}</h3>
+                <p className="text-xs text-[#8C8478] line-clamp-2 h-8 mb-2">{product.description}</p>
+              </div>
 
-                {/* Buttons */}
-                <div className="flex gap-2 pt-3 border-t border-[#f3f0e9]">
-                  <button
-                    onClick={() => alert("Segera!")}
-                    className="flex-1 flex items-center justify-center gap-2 py-2 text-sm font-bold text-[#3e362e] bg-[#f3f0e9] rounded hover:bg-[#e5e0d8]">
-                    <Edit size={16} /> Edit
-                  </button>
-                  <button
-                    onClick={() => alert("Segera!")}
-                    className="flex-1 flex items-center justify-center gap-2 py-2 text-sm font-bold text-red-500 bg-red-50 rounded hover:bg-red-100">
-                    <Trash2 size={16} /> Hapus
-                  </button>
-                </div>
+              {/* Action Buttons (Grid 2 Kolom) */}
+              <div className="grid grid-cols-2 gap-2 mt-auto pt-3 border-t border-[#F3F0E9]">
+                <button
+                  onClick={() => console.log("Open Edit Modal", product.id)}
+                  className="flex items-center justify-center gap-1 py-2 text-sm font-bold text-[#3E362E] bg-[#F3F0E9] rounded hover:bg-[#E5E0D8] transition-colors">
+                  <Edit size={16} /> Edit
+                </button>
+                <button
+                  onClick={() => confirm("Hapus produk ini?")} // Nanti diganti fungsi delete
+                  className="flex items-center justify-center gap-1 py-2 text-sm font-bold text-red-600 bg-red-50 rounded hover:bg-red-100 transition-colors">
+                  <Trash2 size={16} /> Hapus
+                </button>
               </div>
             </div>
           ))}
