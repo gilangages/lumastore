@@ -201,7 +201,7 @@ export const CheckoutModal = ({ isOpen, onClose, product, onSubmit }) => {
 
                   <button
                     type="submit"
-                    className="w-full bg-[#3E362E] hover:bg-black text-[#FDFCF8] font-black py-5 rounded-2xl shadow-[0_8px_20px_rgba(62,54,46,0.25)] active:scale-[0.97] transition-all flex justify-center items-center gap-3 uppercase tracking-[0.2em] text-sm group">
+                    className="w-full bg-[#3E362E] hover:bg-[#8DA399] text-[#FDFCF8] font-black py-4 rounded-xl shadow-[4px_4px_0px_0px_rgba(141,163,153,1)] hover:-translate-y-1 active:translate-y-0 active:shadow-none transition-all flex justify-center items-center gap-3 uppercase tracking-widest text-sm group border-2 border-[#3E362E]">
                     <Lock size={18} className="group-hover:rotate-12 transition-transform" />
                     Bungkus Sekarang
                   </button>
