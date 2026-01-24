@@ -1,14 +1,14 @@
 import { useState } from "react";
-import { Plus, Save, X } from "lucide-react";
+import { Plus, Save, X, UploadCloud } from "lucide-react";
 import { createProduct } from "../../../lib/api/ProductApi";
 import { useLocalStorage } from "react-use";
 import { alertError, alertSuccess } from "../../../lib/alert";
 import { useNavigate } from "react-router";
-import { X as Xicon } from "lucide-react";
+import { createPortal } from "react-dom"; // Tambahkan untuk Lightbox
 
 export default function ProductForm() {
   const [token] = useLocalStorage("token", "");
-  const navigate = useNavigate(); // Untuk redirect setelah sukses
+  const navigate = useNavigate();
 
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
@@ -16,13 +16,14 @@ export default function ProductForm() {
   const [files, setFiles] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
+  // State untuk Preview Full Gambar (Lightbox)
+  const [previewUrl, setPreviewUrl] = useState(null);
+
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files.length > 0) {
-      // Gabungkan file lama dengan file baru (Konversi FileList ke Array)
       const newFiles = Array.from(e.target.files);
       setFiles((prevFiles) => [...prevFiles, ...newFiles]);
     }
-    // Reset value input agar bisa pilih file yang sama lagi kalau mau
     e.target.value = "";
   };
 
@@ -32,6 +33,13 @@ export default function ProductForm() {
 
   async function handleSubmit(e) {
     e.preventDefault();
+
+    // Validasi minimal 1 gambar
+    if (files.length === 0) {
+      alertError("Minimal pilih 1 gambar produk!");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -47,16 +55,8 @@ export default function ProductForm() {
       const response = await createProduct(token, formData);
       const responseBody = await response.json();
 
-      if (response.status === 201) {
+      if (response.ok) {
         await alertSuccess("Produk berhasil dibuat!");
-        // Reset Form
-        setName("");
-        setPrice("");
-        setDescription("");
-        setFiles([]);
-        document.getElementById("fileInput").value = "";
-
-        // Redirect ke list produk
         navigate("/admin/products");
       } else {
         await alertError(responseBody.message || "Gagal upload");
@@ -70,28 +70,28 @@ export default function ProductForm() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto animate-slide-up">
+    <div className="max-w-3xl mx-auto animate-slide-up pb-10">
       <header className="mb-6">
         <h1 className="text-3xl font-bold text-[#3e362e]">Upload Produk Baru</h1>
         <p className="text-[#8c8478]">Tambahkan aset stiker digital ke database.</p>
       </header>
 
-      <div className="bg-white border-2 border-[#e5e0d8] rounded-xl p-6 md:p-8 shadow-sm">
+      <div className="bg-white border-2 border-[#e5e0d8] rounded-2xl p-6 md:p-8 shadow-sm">
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Nama */}
-          <div>
-            <label className="text-sm font-bold text-[#3e362e]">Nama Produk</label>
-            <input
-              required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full border-2 border-[#e5e0d8] rounded-lg p-3 mt-1 focus:border-[#8da399] outline-none transition-colors"
-              placeholder="Contoh: Stiker Kucing Lucu Pack 1"
-            />
-          </div>
+          <div className="grid grid-cols-1 gap-6">
+            {/* Nama Produk */}
+            <div>
+              <label className="text-sm font-bold text-[#3e362e]">Nama Produk</label>
+              <input
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full border-2 border-[#e5e0d8] rounded-lg p-3 mt-1 focus:border-[#8da399] outline-none transition-all"
+                placeholder="Contoh: Stiker Kucing Lucu Pack 1"
+              />
+            </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Harga */}
+            {/* Harga - Full Width agar konsisten */}
             <div>
               <label className="text-sm font-bold text-[#3e362e]">Harga (Rp)</label>
               <input
@@ -99,69 +99,79 @@ export default function ProductForm() {
                 type="number"
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
-                className="w-full border-2 border-[#e5e0d8] rounded-lg p-3 mt-1 focus:border-[#8da399] outline-none"
+                className="w-full border-2 border-[#e5e0d8] rounded-lg p-3 mt-1 focus:border-[#8da399] outline-none transition-all"
                 placeholder="15000"
               />
             </div>
-            {/* Kategori / Info lain bisa ditambah disini */}
-          </div>
 
-          {/* Deskripsi */}
-          <div>
-            <label className="text-sm font-bold text-[#3e362e]">Deskripsi</label>
-            <textarea
-              required
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full border-2 border-[#e5e0d8] rounded-lg p-3 mt-1 focus:border-[#8da399] outline-none h-32 resize-none"
-              placeholder="Jelaskan detail stiker..."
-            />
+            {/* Deskripsi */}
+            <div>
+              <label className="text-sm font-bold text-[#3e362e]">Deskripsi</label>
+              <textarea
+                required
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="w-full border-2 border-[#e5e0d8] rounded-lg p-3 mt-1 focus:border-[#8da399] outline-none h-32 resize-none transition-all"
+                placeholder="Jelaskan detail stiker..."
+              />
+            </div>
           </div>
 
           {/* Upload Area */}
           <div>
-            <label className="text-sm font-bold text-[#3e362e] mb-2 block">Foto Produk</label>
+            <label className="text-sm font-bold text-[#3e362e] mb-3 block">Galeri Foto Produk</label>
 
-            {/* Area Input */}
-            <div className="border-2 border-dashed border-[#e5e0d8] rounded-xl p-6 text-center hover:border-[#8da399] hover:bg-[#fcfbf9] transition-all cursor-pointer relative mb-4">
+            {/* Preview List Gambar */}
+            {files.length > 0 && (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 animate-fade-in">
+                {files.map((file, idx) => {
+                  const url = URL.createObjectURL(file);
+                  return (
+                    <div
+                      key={idx}
+                      className="relative aspect-square rounded-xl overflow-hidden border-2 border-[#8da399] shadow-sm group">
+                      <img
+                        src={url}
+                        alt="preview"
+                        className="w-full h-full object-cover cursor-zoom-in hover:scale-105 transition duration-500"
+                        onClick={() => setPreviewUrl(url)}
+                      />
+                      {/* Tombol Hapus - Style disamakan (Selalu muncul di HP) */}
+                      <button
+                        type="button"
+                        onClick={() => removeFile(idx)}
+                        className="absolute top-1.5 right-1.5 bg-[#3e362e]/80 backdrop-blur text-white p-1.5 rounded-full shadow-md hover:bg-red-500 transition-colors">
+                        <X size={14} />
+                      </button>
+                      <div className="absolute bottom-0 w-full bg-black/40 backdrop-blur-[2px] py-1 px-2">
+                        <p className="text-[10px] text-white truncate">{file.name}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Area Input (Upload Box) */}
+            <div className="relative">
               <input
                 id="fileInput"
                 type="file"
                 multiple
                 accept="image/*"
                 onChange={handleFileChange}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
               />
-              <div className="flex flex-col items-center gap-2">
-                <Plus className="text-[#8da399]" size={32} />
-                <p className="text-sm font-bold text-[#3e362e]">Klik untuk tambah gambar</p>
-                <p className="text-xs text-gray-400">Bisa klik berkali-kali untuk menambah banyak</p>
+              <div className="border-2 border-dashed border-[#dcdcdc] rounded-xl p-8 text-center hover:border-[#8da399] hover:bg-[#f4fcf7] transition-all duration-300 group">
+                <div className="flex flex-col items-center gap-2">
+                  <div className="bg-[#e8f5e9] p-3 rounded-full text-[#2e7d32] group-hover:scale-110 transition-transform shadow-sm">
+                    <UploadCloud size={28} />
+                  </div>
+                  <p className="text-sm font-bold text-[#3e362e]">Klik untuk pilih gambar</p>
+                  <p className="text-xs text-gray-400">Bisa pilih banyak file sekaligus</p>
+                </div>
               </div>
             </div>
-
-            {/* Preview List Gambar yang Dipilih */}
-            {files.length > 0 && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {files.map((file, idx) => (
-                  <div
-                    key={idx}
-                    className="relative group bg-gray-100 rounded-lg overflow-hidden h-24 border border-gray-200">
-                    {/* Preview Image (Object URL) */}
-                    <img src={URL.createObjectURL(file)} alt="preview" className="w-full h-full object-cover" />
-                    {/* Tombol Hapus Kecil di Pojok */}
-                    <button
-                      type="button"
-                      onClick={() => removeFile(idx)}
-                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition shadow-sm">
-                      <Xicon size={12} />
-                    </button>
-                    <p className="text-[10px] text-gray-500 truncate absolute bottom-0 w-full bg-white/90 px-1">
-                      {file.name}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
 
           {/* Tombol Simpan */}
@@ -169,9 +179,9 @@ export default function ProductForm() {
             <button
               disabled={isLoading}
               type="submit"
-              className="bg-[#3e362e] text-white font-bold py-3 px-8 rounded-lg hover:bg-[#5a4e44] transition-all flex items-center gap-2 disabled:opacity-50">
+              className="bg-[#3e362e] text-white font-bold py-3 px-10 rounded-xl hover:bg-[#5a4e44] transition-all flex items-center gap-2 disabled:opacity-50 shadow-md active:scale-95">
               {isLoading ? (
-                "Menyimpan..."
+                <span className="flex items-center gap-2">⏳ Menyimpan...</span>
               ) : (
                 <>
                   <Save size={18} /> Publish Produk
@@ -181,6 +191,24 @@ export default function ProductForm() {
           </div>
         </form>
       </div>
+
+      {/* MODAL PREVIEW IMAGE (LIGHTBOX) */}
+      {previewUrl &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-md animate-fade-in p-4 cursor-zoom-out"
+            onClick={() => setPreviewUrl(null)}>
+            <button className="absolute top-6 right-6 text-white bg-white/10 p-3 rounded-full hover:bg-white/20 transition">
+              <X size={32} />
+            </button>
+            <img
+              src={previewUrl}
+              className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl animate-slide-up"
+              alt="Full Preview"
+            />
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }

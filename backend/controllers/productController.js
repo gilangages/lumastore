@@ -106,7 +106,7 @@ const deleteProduct = async (req, res) => {
 
 const updateProduct = async (req, res) => {
   const { id } = req.params;
-  const { name, price, description } = req.body;
+  const { name, price, description, deleted_images } = req.body;
 
   try {
     // 1. Cek apakah produk ada?
@@ -115,37 +115,55 @@ const updateProduct = async (req, res) => {
       return res.status(404).json({ success: false, message: "Produk tidak ditemukan" });
     }
 
-    // 2. Siapkan Query Dasar
-    let query = "UPDATE products SET name = ?, price = ?, description = ?";
-    let params = [name, price, description];
+    const oldData = existing[0];
 
-    // 3. Logic Ganti Gambar (Hanya jika user upload gambar baru)
+    // 2. Logic Penggabungan Gambar
+    // Ambil gambar lama dari DB (parse JSON jika string, atau array kosong)
+    let currentImages = [];
+    if (oldData.images) {
+      currentImages = typeof oldData.images === "string" ? JSON.parse(oldData.images) : oldData.images;
+    } else if (oldData.image_url) {
+      currentImages = [oldData.image_url];
+    }
+
+    // A. Hapus gambar yang diminta user (FILTERING)
+    if (deleted_images) {
+      const deletedList = JSON.parse(deleted_images); // Parse string array dari frontend
+      currentImages = currentImages.filter((img) => !deletedList.includes(img));
+    }
+
+    // B. Tambah gambar baru jika ada (APPENDING)
     if (req.files && req.files.length > 0) {
       const protocol = req.protocol;
       const host = req.get("host");
 
-      // Buat URL baru
-      const imageUrls = req.files.map((file) => {
+      const newImageUrls = req.files.map((file) => {
         return `${protocol}://${host}/uploads/${file.filename}`;
       });
 
-      const mainImage = imageUrls[0];
-      const imagesJson = JSON.stringify(imageUrls);
-
-      // Tambahkan ke query
-      query += ", image_url = ?, images = ?";
-      params.push(mainImage, imagesJson);
+      currentImages = [...currentImages, ...newImageUrls];
     }
 
-    // 4. Eksekusi Query
-    query += " WHERE id = ?";
-    params.push(id);
+    // C. Tentukan Main Image (Thumbnail)
+    // Ambil gambar pertama dari array hasil gabungan, jika kosong set null
+    const finalMainImage = currentImages.length > 0 ? currentImages[0] : null;
+    const finalImagesJson = JSON.stringify(currentImages);
 
-    await db.query(query, params);
+    // 3. Update Database
+    const query = `
+      UPDATE products
+      SET name = ?, price = ?, description = ?, image_url = ?, images = ?
+      WHERE id = ?
+    `;
+
+    await db.query(query, [name, price, description, finalMainImage, finalImagesJson, id]);
 
     res.status(200).json({
       success: true,
       message: "Produk berhasil diupdate!",
+      data: {
+        images: currentImages,
+      },
     });
   } catch (error) {
     console.error("Error update product:", error);
