@@ -4,7 +4,7 @@ import { alertError } from "../../lib/alert";
 import { useNavigate } from "react-router";
 
 export default function AdminLogout() {
-  const [token, setToken] = useLocalStorage("token", "");
+  const [token, _, removeToken] = useLocalStorage("token", "");
   const navigate = useNavigate();
 
   async function handleLogout() {
@@ -13,7 +13,7 @@ export default function AdminLogout() {
     console.log(responseBody);
 
     if (response.status === 200) {
-      setToken("");
+      removeToken();
       await navigate({
         pathname: "/admin/login",
       });

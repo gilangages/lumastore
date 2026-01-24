@@ -6,9 +6,6 @@ export const ProductShowcase = ({ products, loading, onBuy }) => {
     <main id="products" className="max-w-6xl mx-auto px-6 py-16">
       {/* HEADER: RATA TENGAH */}
       <div className="text-center mb-12">
-        <span className="bg-[#EAE7DF] text-[#3E362E] px-4 py-1.5 rounded-full text-xs font-bold border border-[#E5E0D8] inline-block mb-3">
-          Update Terbaru
-        </span>
         <h2 className="text-3xl md:text-4xl font-black text-[#3E362E] mb-3 flex items-center justify-center gap-2">
           Koleksi Stiker ✂️
         </h2>
