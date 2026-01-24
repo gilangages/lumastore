@@ -179,9 +179,11 @@ export default function ProductForm() {
             <button
               disabled={isLoading}
               type="submit"
-              className="bg-[#3e362e] text-white font-bold py-3 px-10 rounded-xl hover:bg-[#5a4e44] transition-all flex items-center gap-2 disabled:opacity-50 shadow-md active:scale-95">
+              className="w-full md:w-auto justify-center bg-[#3e362e] text-white font-bold py-3 px-10 rounded-xl hover:bg-[#5a4e44] transition-all flex items-center gap-2 disabled:opacity-50 shadow-md active:scale-95">
               {isLoading ? (
-                <span className="flex items-center gap-2">⏳ Menyimpan...</span>
+                <span className="flex items-center gap-2 justify-center">
+                  <span className="animate-spin text-lg">⏳</span> Menyimpan...
+                </span>
               ) : (
                 <>
                   <Save size={18} /> Publish Produk

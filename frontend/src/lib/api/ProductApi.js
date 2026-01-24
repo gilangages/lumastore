@@ -36,3 +36,14 @@ export const productUpdate = async (token, id, formData) => {
     body: formData,
   });
 };
+
+export const bulkDeleteProducts = async (token, ids) => {
+  return await fetch(`${import.meta.env.VITE_APP_PATH}/products/bulk-delete`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ ids }), // Mengirim array ID [1, 2, 3]
+  });
+};

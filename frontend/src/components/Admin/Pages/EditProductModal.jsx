@@ -246,19 +246,19 @@ export default function EditProductModal({ product, isOpen, onClose, onSuccess }
             </div>
 
             {/* Footer */}
-            <div className="p-6 border-t border-[#f1f0eb] bg-[#fdfcf8] rounded-b-2xl flex justify-end gap-3">
+            <div className="p-6 border-t border-[#f1f0eb] bg-[#fdfcf8] rounded-b-2xl grid grid-cols-2 md:flex md:justify-end gap-3">
               <button
                 onClick={onClose}
-                className="px-5 py-2.5 rounded-lg border border-[#e5e0d8] text-[#3e362e] font-bold hover:bg-gray-50 transition">
+                className="w-full md:w-auto px-5 py-2.5 rounded-lg border border-[#e5e0d8] text-[#3e362e] font-bold hover:bg-gray-50 transition text-center">
                 Batal
               </button>
               <button
                 type="submit"
                 form="editForm"
                 disabled={isLoading}
-                className="px-6 py-2.5 rounded-lg bg-[#3e362e] text-white font-bold hover:bg-[#5a4e44] transition flex items-center gap-2 disabled:opacity-50">
-                {isLoading ? <span className="animate-spin">⏳</span> : <Save size={18} />}
-                Simpan Perubahan
+                className="w-full md:w-auto px-6 py-2.5 rounded-lg bg-[#3e362e] text-white font-bold hover:bg-[#5a4e44] transition flex items-center justify-center gap-2 disabled:opacity-50">
+                {isLoading ? <span className="animate-spin text-sm">⏳</span> : <Save size={18} className="shrink-0" />}
+                <span className="whitespace-nowrap text-sm md:text-base">Simpan Perubahan</span>
               </button>
             </div>
           </div>

@@ -170,5 +170,24 @@ const updateProduct = async (req, res) => {
     res.status(500).json({ success: false, message: "Gagal update produk", error: error.message });
   }
 };
+
+const bulkDeleteProducts = async (req, res) => {
+  const { ids } = req.body; // Ambil array ID dari frontend
+
+  try {
+    if (!ids || ids.length === 0) {
+      return res.status(400).json({ success: false, message: "Tidak ada ID yang dipilih" });
+    }
+
+    // Hapus semua produk yang ID-nya ada di dalam array
+    const query = "DELETE FROM products WHERE id IN (?)";
+    await db.query(query, [ids]);
+
+    res.status(200).json({ success: true, message: `${ids.length} produk berhasil dihapus` });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+// Jangan lupa tambahkan ke module.exports
 // Pastikan export namanya SAMA dengan yang di atas
-module.exports = { getAllProducts, createProduct, deleteProduct, updateProduct };
+module.exports = { getAllProducts, createProduct, deleteProduct, updateProduct, bulkDeleteProducts };

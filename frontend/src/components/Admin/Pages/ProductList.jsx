@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { getAllProducts, productDelete } from "../../../lib/api/ProductApi";
-import { Search, RefreshCw, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { bulkDeleteProducts, getAllProducts, productDelete } from "../../../lib/api/ProductApi";
+import { Trash2, CheckSquare, Square, RefreshCw, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { alertConfirm, alertError, alertSuccess } from "../../../lib/alert";
 import AdminProductCard from "../Card/AdminProductCard";
 import { useLocalStorage } from "react-use";
@@ -26,7 +26,10 @@ export default function ProductList() {
   //Edit
   const [editingProduct, setEditingProduct] = useState(null);
 
-  // Jarak minimum swipe (biar ga sensitif banget kesentuh dikit)
+  //bulkDelete
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
+
   const minSwipeDistance = 50;
 
   const onTouchStart = (e) => {
@@ -40,28 +43,16 @@ export default function ProductList() {
 
   const onTouchEnd = () => {
     if (!touchStart || !touchEnd) return;
-
     const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
-
-    // Swipe ke Kiri (Next Image)
-    if (isLeftSwipe) {
-      handleNextImage();
-    }
-    // Swipe ke Kanan (Prev Image)
-    if (isRightSwipe) {
-      handlePrevImage();
-    }
+    if (distance > minSwipeDistance) handleNextImage();
+    if (distance < -minSwipeDistance) handlePrevImage();
   };
 
   const fetchProducts = async () => {
-    // ... (Kode fetch sama seperti sebelumnya) ...
     setIsLoading(true);
     try {
       const response = await getAllProducts();
       const res = await response.json();
-
       if (res.success) setProducts(res.data);
       else setProducts([]);
     } catch (error) {
@@ -72,43 +63,63 @@ export default function ProductList() {
     }
   };
 
-  // 2. BUAT FUNGSI BARU KHUSUS TOMBOL REFRESH
+  const toggleSelect = (id) => {
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]));
+  };
+
+  const handleBulkDelete = async () => {
+    if (!(await alertConfirm(`Hapus ${selectedIds.length} produk sekaligus?`))) return;
+    setIsLoading(true);
+    try {
+      const response = await bulkDeleteProducts(token, selectedIds);
+      if (response.ok) {
+        await alertSuccess("Produk berhasil dihapus!");
+        setSelectedIds([]);
+        setIsSelectionMode(false);
+        setReload(!reload);
+      }
+    } catch (error) {
+      console.log(error);
+      alertError("Gagal menghapus produk");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSelectAll = () => {
+    if (selectedIds.length === filteredProducts.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(filteredProducts.map((p) => p.id));
+    }
+  };
+
+  const toggleSelectionMode = () => {
+    if (isSelectionMode) setSelectedIds([]);
+    setIsSelectionMode(!isSelectionMode);
+  };
+
   const handleRefresh = async () => {
-    setIsLoading(true); // Mulai muter
-
-    // Trik UX: Kasih jeda 500ms biar kelihatan muter (User senang melihat feedback visual)
+    setIsLoading(true);
     await new Promise((resolve) => setTimeout(resolve, 500));
-
-    await fetchProducts(); // Ambil data asli
-
-    // (Opsional) Munculkan notifikasi kecil kalau mau
+    await fetchProducts();
     await alertSuccess("Data berhasil diperbarui!");
-
-    setIsLoading(false); // Berhenti muter
+    setIsLoading(false);
   };
 
   const handleViewImage = (product) => {
-    let images = [];
-    if (product.images && Array.isArray(product.images) && product.images.length > 0) {
-      images = product.images;
-    } else {
-      images = [product.image_url];
-    }
+    const images =
+      product.images && Array.isArray(product.images) && product.images.length > 0
+        ? product.images
+        : [product.image_url];
     setCurrentImages(images);
     setCurrentIndex(0);
     setIsModalOpen(true);
   };
 
-  // Kita ubah jadi function biasa biar bisa dipanggil touch handler
-  const handleNextImage = () => {
-    setCurrentIndex((prev) => (prev + 1) % currentImages.length);
-  };
+  const handleNextImage = () => setCurrentIndex((prev) => (prev + 1) % currentImages.length);
+  const handlePrevImage = () => setCurrentIndex((prev) => (prev === 0 ? currentImages.length - 1 : prev - 1));
 
-  const handlePrevImage = () => {
-    setCurrentIndex((prev) => (prev === 0 ? currentImages.length - 1 : prev - 1));
-  };
-
-  // Handler event click tombol (perlu stopPropagation)
   const onNextClick = (e) => {
     e.stopPropagation();
     handleNextImage();
@@ -118,28 +129,17 @@ export default function ProductList() {
     handlePrevImage();
   };
 
-  // ... (handleEdit, handleDelete, filteredProducts sama) ...
-  const handleEdit = (product) => {
-    setEditingProduct(product);
-  };
-
-  const handleEditSuccess = () => {
-    setReload(!reload);
-  };
+  const handleEdit = (product) => setEditingProduct(product);
+  const handleEditSuccess = () => setReload(!reload);
 
   async function handleDelete(id) {
-    if (!(await alertConfirm("Apakah kamu yakin mau menghapus produk ini?"))) {
-      return;
-    }
-
+    if (!(await alertConfirm("Apakah kamu yakin mau menghapus produk ini?"))) return;
     const response = await productDelete(token, id);
-    const responseBody = await response.json();
-    console.log(responseBody);
-
     if (response.status === 200) {
       await alertSuccess("Produk berhasil dihapus!");
       setReload(!reload);
     } else {
+      const responseBody = await response.json();
       alertError(responseBody.message);
     }
   }
@@ -151,88 +151,124 @@ export default function ProductList() {
   const filteredProducts = products.filter((p) => p.name.toLowerCase().includes(search.toLowerCase()));
 
   return (
-    <div className="max-w-6xl mx-auto animate-slide-up relative">
-      {/* ... (Header & Grid Card sama persis) ... */}
+    <div className="max-w-6xl mx-auto animate-slide-up relative px-4 pb-32">
       <header className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        {/* Copy paste header code yg lama */}
         <div>
           <h1 className="text-3xl font-bold text-[#3e362e]">Daftar Produk</h1>
           <p className="text-[#8c8478]">Kelola semua stiker yang sudah diupload.</p>
         </div>
-        <div className="flex gap-2 w-full md:w-auto">
-          <button onClick={handleRefresh} className="p-2 bg-[#f3f0e9] rounded-lg hover:bg-[#e5e0d8] ml-auto">
+
+        <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
+          <button
+            onClick={toggleSelectionMode}
+            className={`px-4 py-2 rounded-lg font-medium transition-all whitespace-nowrap border-2 ${
+              isSelectionMode
+                ? "bg-[#3e362e] border-[#3e362e] text-white"
+                : "bg-white border-[#E5E0D8] text-[#3e362e] hover:bg-[#f3f0e9]"
+            }`}>
+            {isSelectionMode ? "Batal" : "Pilih Produk"}
+          </button>
+
+          <button onClick={handleRefresh} className="p-2 bg-[#f3f0e9] rounded-lg hover:bg-[#e5e0d8] ml-auto shrink-0">
             <RefreshCw size={20} className={isLoading ? "animate-spin" : ""} />
           </button>
         </div>
       </header>
 
       {/* Grid Content */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredProducts.map((product) => (
-          <AdminProductCard
-            key={product.id}
-            product={product}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onViewImage={handleViewImage}
-          />
-        ))}
-      </div>
+      {filteredProducts.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredProducts.map((product) => (
+            <AdminProductCard
+              key={product.id}
+              product={product}
+              isSelectionMode={isSelectionMode}
+              isSelected={selectedIds.includes(product.id)}
+              onSelect={() => toggleSelect(product.id)}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onViewImage={handleViewImage}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-20 bg-[#f3f0e9]/50 rounded-3xl border-2 border-dashed border-[#E5E0D8]">
+          <p className="text-[#8c8478]">Tidak ada produk ditemukan.</p>
+        </div>
+      )}
+
+      {/* --- FLOATING ACTION BAR: Glassmorphism Effect & Lower Position --- */}
+      {isSelectionMode && (
+        <div className="fixed bottom-2 left-1/2 -translate-x-1/2 z-[100] w-[95%] max-w-lg bg-[#3e362e]/90 backdrop-blur-xl text-white p-4 rounded-2xl shadow-2xl flex items-center justify-between animate-slide-up border border-white/20 ring-1 ring-white/10">
+          <div className="flex flex-col pl-2">
+            <span className="text-[10px] uppercase tracking-widest text-gray-300 font-bold">Terpilih</span>
+            <span className="text-lg font-black leading-none">
+              {selectedIds.length} <span className="text-xs font-normal text-gray-200 ml-1">Item</span>
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1 md:gap-2">
+            <button
+              onClick={handleSelectAll}
+              className="p-3 hover:bg-white/10 rounded-xl transition-colors text-white active:scale-90"
+              title="Pilih Semua">
+              {selectedIds.length === filteredProducts.length && filteredProducts.length > 0 ? (
+                <CheckSquare size={22} className="text-[#8da399]" />
+              ) : (
+                <Square size={22} />
+              )}
+            </button>
+
+            <button
+              onClick={handleBulkDelete}
+              disabled={selectedIds.length === 0}
+              className={`flex items-center gap-2 px-5 py-3 rounded-xl font-bold transition-all active:scale-95 ${
+                selectedIds.length > 0
+                  ? "bg-red-500 hover:bg-red-600 text-white shadow-lg"
+                  : "bg-white/10 text-white/30 cursor-not-allowed"
+              }`}>
+              <Trash2 size={18} />
+              <span className="text-sm font-bold">Hapus</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* --- MODAL LIGHTBOX UPDATE --- */}
       {isModalOpen &&
         createPortal(
           <div
-            // UPDATE CSS: p-0 (Full di HP) md:p-4 (Ada padding di laptop)
             className="fixed inset-0 z-[9999] bg-black/95 flex items-center justify-center p-0 md:p-4 backdrop-blur-sm animate-fade-in touch-none"
             onClick={() => setIsModalOpen(false)}>
             <div
               className="relative max-w-5xl w-full h-full flex flex-col items-center justify-center pointer-events-none"
-              // Tambahkan Touch Event Listener di container utama gambar
               onTouchStart={onTouchStart}
               onTouchMove={onTouchMove}
               onTouchEnd={onTouchEnd}>
               <div className="relative pointer-events-auto w-full flex justify-center">
-                {/* Tombol Close */}
                 <button
                   onClick={() => setIsModalOpen(false)}
                   className="absolute -top-16 right-4 md:-right-12 text-white/80 hover:text-white transition p-2 z-50 bg-black/20 rounded-full md:bg-transparent">
                   <X size={32} />
                 </button>
-
-                {/* Main Image */}
                 <img
                   src={currentImages[currentIndex]}
                   alt={`Preview ${currentIndex}`}
-                  // UPDATE: object-contain agar gambar pas di layar tanpa terpotong
                   className="max-h-[85vh] w-full md:w-auto object-contain md:rounded-lg shadow-2xl transition-all duration-300"
                   onClick={(e) => e.stopPropagation()}
                 />
-
-                {/* Navigation Buttons (Hanya muncul jika gambar > 1) */}
                 {currentImages.length > 1 && (
                   <>
-                    {/* BUTTON PREV (Desktop) */}
                     <button
                       onClick={onPrevClick}
-                      // UPDATE STYLE:
-                      // 1. fixed left-4/8: Agar posisi konsisten relatif layar/container (Stabil)
-                      // 2. p-3: Padding lebih besar biar enak di-klik
-                      // 3. hover:scale-110: Efek interaktif
-                      className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white border border-white/20 p-3 rounded-full transition-all duration-200 hover:scale-110 backdrop-blur-sm group"
-                      title="Sebelumnya">
+                      className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white border border-white/20 p-3 rounded-full transition-all duration-200 hover:scale-110 backdrop-blur-sm group">
                       <ChevronLeft size={28} className="group-hover:-translate-x-1 transition-transform" />
                     </button>
-
-                    {/* BUTTON NEXT (Desktop) */}
                     <button
                       onClick={onNextClick}
-                      className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white border border-white/20 p-3 rounded-full transition-all duration-200 hover:scale-110 backdrop-blur-sm group"
-                      title="Selanjutnya">
+                      className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white border border-white/20 p-3 rounded-full transition-all duration-200 hover:scale-110 backdrop-blur-sm group">
                       <ChevronRight size={28} className="group-hover:translate-x-1 transition-transform" />
                     </button>
-
-                    {/* Indikator Titik (Dots) - Tetap muncul di HP biar tau ada gambar lain */}
                     <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 flex gap-2">
                       {currentImages.map((_, idx) => (
                         <div
@@ -244,8 +280,6 @@ export default function ProductList() {
                   </>
                 )}
               </div>
-
-              {/* Hint Text di HP */}
               <p className="text-white/40 mt-12 text-xs md:text-sm pointer-events-auto absolute bottom-8 md:static">
                 {currentImages.length > 1 ? "Geser untuk melihat foto lain" : ""}
               </p>
@@ -254,10 +288,9 @@ export default function ProductList() {
           document.body,
         )}
 
-      {/* 5. Render Modal Edit */}
       {editingProduct && (
         <EditProductModal
-          key={editingProduct.id} // Aman, karena baris ini cuma jalan kalau editingProduct TIDAK null
+          key={editingProduct.id}
           isOpen={true}
           product={editingProduct}
           onClose={() => setEditingProduct(null)}

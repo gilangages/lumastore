@@ -13,5 +13,6 @@ router.post("/", verifyToken, upload.array("images", 10), productController.crea
 router.put("/:id", verifyToken, upload.array("images", 10), productController.updateProduct);
 
 router.delete("/:id", verifyToken, productController.deleteProduct);
+router.post("/bulk-delete", verifyToken, productController.bulkDeleteProducts);
 
 module.exports = router;
