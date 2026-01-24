@@ -2,13 +2,14 @@ const express = require("express");
 const router = express.Router();
 const productController = require("../controllers/productController");
 const verifyToken = require("../middleware/authMiddleware");
+const upload = require("../middleware/uploadMiddleware");
 
 /// Public Route
 router.get("/", productController.getAllProducts);
 
 // Protected Routes (Hanya Admin yang punya Token yang bisa akses)
-// Catatan: Pastikan kamu sudah buat fungsi createProduct & deleteProduct di controller
-router.post("/", verifyToken, productController.createProduct);
+// // upload.array('images') membolehkan upload banyak file sekaligus
+router.post("/", verifyToken, upload.array("images", 10), productController.createProduct);
 router.delete("/:id", verifyToken, productController.deleteProduct);
 
 module.exports = router;

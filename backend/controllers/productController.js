@@ -23,24 +23,50 @@ const getAllProducts = async (req, res) => {
 };
 
 const createProduct = async (req, res) => {
-  // Tambahkan file_url jika ini produk digital (sesuai API spec)
-  const { name, price, description, images, file_url } = req.body;
-
-  // Validasi sederhana
-  if (!name || !price) {
-    return res.status(400).json({ success: false, message: "Nama dan Harga wajib diisi!" });
-  }
-
-  // Logic gambar (Thumbail & Gallery)
-  const mainImage = images && images.length > 0 ? images[0] : "https://placehold.co/600x400";
-  const imagesJson = JSON.stringify(images || []);
-
   try {
-    // Pastikan kolom file_url ada di database kamu. Jika belum, hapus bagian file_url.
+    // 1. Ambil data text dari body (termasuk description)
+    const { name, price, description, file_url } = req.body;
+
+    // Validasi input wajib
+    if (!name || !price) {
+      return res.status(400).json({ success: false, message: "Nama dan Harga wajib diisi!" });
+    }
+
+    // 2. Logic Upload Gambar (Dari Device/Multer)
+    let imageUrls = [];
+
+    if (req.files && req.files.length > 0) {
+      // Jika admin upload gambar, buat URL untuk setiap file
+      const protocol = req.protocol;
+      const host = req.get("host");
+
+      imageUrls = req.files.map((file) => {
+        return `${protocol}://${host}/uploads/${file.filename}`;
+      });
+    } else {
+      // Jika tidak ada gambar diupload, pakai placeholder
+      imageUrls.push("https://placehold.co/600x400");
+    }
+
+    // Gambar pertama jadi thumbnail utama
+    const mainImage = imageUrls[0];
+
+    // Simpan semua gambar (gallery) sebagai JSON string
+    const imagesJson = JSON.stringify(imageUrls);
+
+    // 3. Simpan ke Database (Kolom description TETAP DISIMPAN)
     const query =
       "INSERT INTO products (name, price, description, image_url, images, file_url) VALUES (?, ?, ?, ?, ?, ?)";
 
-    const [result] = await db.query(query, [name, price, description, mainImage, imagesJson, file_url || null]);
+    // Perhatikan urutan parameter harus sesuai dengan urutan kolom di query
+    const [result] = await db.query(query, [
+      name,
+      price,
+      description || "", // Default string kosong jika description null
+      mainImage,
+      imagesJson,
+      file_url || null,
+    ]);
 
     res.status(201).json({
       success: true,
@@ -49,8 +75,9 @@ const createProduct = async (req, res) => {
         id: result.insertId,
         name,
         price,
-        description,
+        description, // Dikembalikan juga di response
         image_url: mainImage,
+        images: imageUrls,
         file_url,
       },
     });
