@@ -33,7 +33,7 @@ export const CheckoutModal = ({ isOpen, onClose, product, onSubmit }) => {
   return (
     <>
       {/* --- MODAL UTAMA (Logic Lama) --- */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#3E362E]/50 backdrop-blur-sm p-4 animate-fadeIn">
+      <div className="fixed inset-0 z-51 flex items-center justify-center bg-[#3E362E]/50 backdrop-blur-sm p-4 animate-fadeIn">
         <div className="bg-[#FDFCF8] w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[90vh] md:max-h-[600px] relative border-4 border-[#3E362E]">
           <button
             onClick={onClose}

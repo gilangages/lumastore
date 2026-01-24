@@ -5,6 +5,7 @@ import { Search, RefreshCw, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { alertConfirm, alertError, alertSuccess } from "../../../lib/alert";
 import AdminProductCard from "../Card/AdminProductCard";
 import { useLocalStorage } from "react-use";
+import EditProductModal from "./EditProductModal";
 
 export default function ProductList() {
   const [token, _] = useLocalStorage("token", "");
@@ -21,6 +22,9 @@ export default function ProductList() {
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
   const [reload, setReload] = useState(false);
+
+  //Edit
+  const [editingProduct, setEditingProduct] = useState(null);
 
   // Jarak minimum swipe (biar ga sensitif banget kesentuh dikit)
   const minSwipeDistance = 50;
@@ -57,6 +61,7 @@ export default function ProductList() {
     try {
       const response = await getAllProducts();
       const res = await response.json();
+
       if (res.success) setProducts(res.data);
       else setProducts([]);
     } catch (error) {
@@ -65,6 +70,21 @@ export default function ProductList() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // 2. BUAT FUNGSI BARU KHUSUS TOMBOL REFRESH
+  const handleRefresh = async () => {
+    setIsLoading(true); // Mulai muter
+
+    // Trik UX: Kasih jeda 500ms biar kelihatan muter (User senang melihat feedback visual)
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    await fetchProducts(); // Ambil data asli
+
+    // (Opsional) Munculkan notifikasi kecil kalau mau
+    await alertSuccess("Data berhasil diperbarui!");
+
+    setIsLoading(false); // Berhenti muter
   };
 
   const handleViewImage = (product) => {
@@ -99,7 +119,13 @@ export default function ProductList() {
   };
 
   // ... (handleEdit, handleDelete, filteredProducts sama) ...
-  const handleEdit = (product) => console.log("Edit", product);
+  const handleEdit = (product) => {
+    setEditingProduct(product);
+  };
+
+  const handleEditSuccess = () => {
+    setReload(!reload);
+  };
 
   async function handleDelete(id) {
     if (!(await alertConfirm("Apakah kamu yakin mau menghapus produk ini?"))) {
@@ -134,7 +160,7 @@ export default function ProductList() {
           <p className="text-[#8c8478]">Kelola semua stiker yang sudah diupload.</p>
         </div>
         <div className="flex gap-2 w-full md:w-auto">
-          <button onClick={fetchProducts} className="p-2 bg-[#f3f0e9] rounded-lg hover:bg-[#e5e0d8] ml-auto">
+          <button onClick={handleRefresh} className="p-2 bg-[#f3f0e9] rounded-lg hover:bg-[#e5e0d8] ml-auto">
             <RefreshCw size={20} className={isLoading ? "animate-spin" : ""} />
           </button>
         </div>
@@ -227,6 +253,17 @@ export default function ProductList() {
           </div>,
           document.body,
         )}
+
+      {/* 5. Render Modal Edit */}
+      {editingProduct && (
+        <EditProductModal
+          key={editingProduct.id} // Aman, karena baris ini cuma jalan kalau editingProduct TIDAK null
+          isOpen={true}
+          product={editingProduct}
+          onClose={() => setEditingProduct(null)}
+          onSuccess={handleEditSuccess}
+        />
+      )}
     </div>
   );
 }

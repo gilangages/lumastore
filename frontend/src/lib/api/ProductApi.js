@@ -26,3 +26,13 @@ export const productDelete = async (token, id) => {
     },
   });
 };
+
+export const productUpdate = async (token, id, formData) => {
+  return await fetch(`${import.meta.env.VITE_APP_PATH}/products/${id}`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+  });
+};

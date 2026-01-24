@@ -104,5 +104,53 @@ const deleteProduct = async (req, res) => {
   }
 };
 
+const updateProduct = async (req, res) => {
+  const { id } = req.params;
+  const { name, price, description } = req.body;
+
+  try {
+    // 1. Cek apakah produk ada?
+    const [existing] = await db.query("SELECT * FROM products WHERE id = ?", [id]);
+    if (existing.length === 0) {
+      return res.status(404).json({ success: false, message: "Produk tidak ditemukan" });
+    }
+
+    // 2. Siapkan Query Dasar
+    let query = "UPDATE products SET name = ?, price = ?, description = ?";
+    let params = [name, price, description];
+
+    // 3. Logic Ganti Gambar (Hanya jika user upload gambar baru)
+    if (req.files && req.files.length > 0) {
+      const protocol = req.protocol;
+      const host = req.get("host");
+
+      // Buat URL baru
+      const imageUrls = req.files.map((file) => {
+        return `${protocol}://${host}/uploads/${file.filename}`;
+      });
+
+      const mainImage = imageUrls[0];
+      const imagesJson = JSON.stringify(imageUrls);
+
+      // Tambahkan ke query
+      query += ", image_url = ?, images = ?";
+      params.push(mainImage, imagesJson);
+    }
+
+    // 4. Eksekusi Query
+    query += " WHERE id = ?";
+    params.push(id);
+
+    await db.query(query, params);
+
+    res.status(200).json({
+      success: true,
+      message: "Produk berhasil diupdate!",
+    });
+  } catch (error) {
+    console.error("Error update product:", error);
+    res.status(500).json({ success: false, message: "Gagal update produk", error: error.message });
+  }
+};
 // Pastikan export namanya SAMA dengan yang di atas
-module.exports = { getAllProducts, createProduct, deleteProduct };
+module.exports = { getAllProducts, createProduct, deleteProduct, updateProduct };
