@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getProducts } from "../../lib/api/ProductApi";
+import { getAllProducts } from "../../lib/api/ProductApi";
 import { purchaseProduct } from "../../lib/api/PaymentApi";
 
 // Import Components
@@ -57,7 +57,7 @@ export const HomePage = () => {
     document.body.appendChild(script);
 
     // 4. Fetch Data
-    getProducts()
+    getAllProducts()
       .then((res) => res.json())
       .then((json) => setProducts(json.data || []))
       .catch((err) => {

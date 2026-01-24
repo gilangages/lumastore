@@ -15,6 +15,13 @@ if (process.env.DB_PASS === undefined) {
   process.env.DB_PASS = "";
 }
 
+if (!process.env.DB_NAME) {
+  // GANTI 'nama_database_kamu' dengan nama database asli di phpMyAdmin/MySQL kamu
+  const defaultDB = "lumastore_db";
+  console.warn(`⚠️ Peringatan: DB_NAME tidak ditemukan di .env, menggunakan default '${defaultDB}'`);
+  process.env.DB_NAME = defaultDB;
+}
+
 const request = require("supertest");
 const express = require("express");
 const db = require("../config/database");
@@ -72,6 +79,31 @@ describe("POST /api/products (Upload Feature)", () => {
     const res = await request(app).post("/api/products").field("description", "Lupa nama dan harga");
 
     expect(res.statusCode).toEqual(400);
+  });
+  it("should fail if description is missing", async () => {
+    // Kita kirim nama & harga & gambar, TAPI deskripsi kosong
+    const res = await request(app)
+      .post("/api/products")
+      .field("name", "Produk Tanpa Deskripsi")
+      .field("price", 50000)
+      // .field("description", "...") // HAPUS INI
+      .attach("images", Buffer.from("fake"), "foto.jpg");
+
+    expect(res.statusCode).toEqual(400);
+    expect(res.body.message).toContain("Deskripsi wajib diisi");
+  });
+
+  it("should fail if image is missing", async () => {
+    // Kita kirim semua data text, TAPI lupa attach gambar
+    const res = await request(app)
+      .post("/api/products")
+      .field("name", "Produk Tanpa Gambar")
+      .field("price", 50000)
+      .field("description", "Ini deskripsi ada");
+    // .attach("images", ...) // HAPUS INI
+
+    expect(res.statusCode).toEqual(400);
+    expect(res.body.message).toContain("Minimal upload 1 gambar");
   });
 });
 

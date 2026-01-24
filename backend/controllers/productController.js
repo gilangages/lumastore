@@ -24,49 +24,42 @@ const getAllProducts = async (req, res) => {
 
 const createProduct = async (req, res) => {
   try {
-    // 1. Ambil data text dari body (termasuk description)
+    // 1. Ambil data text dari body
     const { name, price, description, file_url } = req.body;
 
-    // Validasi input wajib
-    if (!name || !price) {
-      return res.status(400).json({ success: false, message: "Nama dan Harga wajib diisi!" });
-    }
-
-    // 2. Logic Upload Gambar (Dari Device/Multer)
-    let imageUrls = [];
-
-    if (req.files && req.files.length > 0) {
-      // Jika admin upload gambar, buat URL untuk setiap file
-      const protocol = req.protocol;
-      const host = req.get("host");
-
-      imageUrls = req.files.map((file) => {
-        return `${protocol}://${host}/uploads/${file.filename}`;
+    // --- VALIDASI KETAT ---
+    // Cek apakah file gambar ada?
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Minimal upload 1 gambar produk!",
       });
-    } else {
-      // Jika tidak ada gambar diupload, pakai placeholder
-      imageUrls.push("https://placehold.co/600x400");
     }
 
-    // Gambar pertama jadi thumbnail utama
-    const mainImage = imageUrls[0];
+    // Cek apakah field text lengkap?
+    if (!name || !price || !description) {
+      return res.status(400).json({
+        success: false,
+        message: "Nama, Harga, dan Deskripsi wajib diisi!",
+      });
+    }
 
-    // Simpan semua gambar (gallery) sebagai JSON string
+    // 2. Logic Upload Gambar
+    const protocol = req.protocol;
+    const host = req.get("host");
+
+    const imageUrls = req.files.map((file) => {
+      return `${protocol}://${host}/uploads/${file.filename}`;
+    });
+
+    const mainImage = imageUrls[0];
     const imagesJson = JSON.stringify(imageUrls);
 
-    // 3. Simpan ke Database (Kolom description TETAP DISIMPAN)
+    // 3. Simpan ke Database
     const query =
       "INSERT INTO products (name, price, description, image_url, images, file_url) VALUES (?, ?, ?, ?, ?, ?)";
 
-    // Perhatikan urutan parameter harus sesuai dengan urutan kolom di query
-    const [result] = await db.query(query, [
-      name,
-      price,
-      description || "", // Default string kosong jika description null
-      mainImage,
-      imagesJson,
-      file_url || null,
-    ]);
+    const [result] = await db.query(query, [name, price, description, mainImage, imagesJson, file_url || null]);
 
     res.status(201).json({
       success: true,
@@ -75,7 +68,7 @@ const createProduct = async (req, res) => {
         id: result.insertId,
         name,
         price,
-        description, // Dikembalikan juga di response
+        description,
         image_url: mainImage,
         images: imageUrls,
         file_url,

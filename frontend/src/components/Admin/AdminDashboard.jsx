@@ -1,84 +1,81 @@
 import { useState, useEffect } from "react";
-import { Plus, Trash2, Link as LinkIcon, Save, Image as ImageIcon } from "lucide-react";
+import { Plus, Save, Image as ImageIcon } from "lucide-react";
+import { createProduct, getAllProducts } from "../../lib/api/ProductApi"; // Pastikan import ini benar
+import { useLocalStorage } from "react-use";
+import { alertError, alertSuccess } from "../../lib/alert";
 
 export default function AdminDashboard() {
-  // State Form
-  const [formData, setFormData] = useState({
-    name: "",
-    price: "",
-    description: "",
-    images: [""], // Mulai dengan 1 input kosong
-  });
+  const [token, _] = useLocalStorage("token", "");
 
-  const [products, setProducts] = useState([]);
+  // State Form
+  const [name, setName] = useState("");
+  const [price, setPrice] = useState("");
+  const [description, setDescription] = useState("");
+  const [files, setFiles] = useState([]); // Ganti images string jadi files object
   const [isLoading, setIsLoading] = useState(false);
 
-  // Fetch Produk saat load
-  const fetchProducts = async () => {
-    try {
-      const res = await fetch("http://localhost:5000/api/products");
-      const json = await res.json();
-      if (json.success) setProducts(json.data);
-    } catch (err) {
-      console.error("Gagal ambil produk", err);
-    }
-  };
+  // State List Produk
+  const [products, setProducts] = useState([]);
 
+  // Fetch data produk saat load
   useEffect(() => {
     fetchProducts();
   }, []);
 
-  // Handle Input Biasa
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const fetchProducts = async () => {
+    try {
+      const res = await getAllProducts();
+      if (res.success) setProducts(res.data);
+    } catch (error) {
+      console.error("Gagal ambil produk", error);
+    }
   };
 
-  // Handle Dynamic Image URL
-  const handleImageChange = (index, value) => {
-    const newImages = [...formData.images];
-    newImages[index] = value;
-    setFormData({ ...formData, images: newImages });
+  const handleFileChange = (e) => {
+    // Simpan file yang dipilih ke state
+    setFiles(e.target.files);
   };
 
-  const addImageField = () => {
-    setFormData({ ...formData, images: [...formData.images, ""] });
-  };
-
-  const removeImageField = (index) => {
-    const newImages = formData.images.filter((_, i) => i !== index);
-    setFormData({ ...formData, images: newImages });
-  };
-
-  // Submit Data
-  const handleSubmit = async (e) => {
+  async function handleSubmit(e) {
     e.preventDefault();
     setIsLoading(true);
 
-    // Filter URL kosong
-    const cleanImages = formData.images.filter((url) => url.trim() !== "");
-
     try {
-      const res = await fetch("http://localhost:5000/api/products", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...formData, images: cleanImages }),
-      });
-      const json = await res.json();
+      // 1. Gunakan FormData untuk kirim File + Text
+      const formData = new FormData();
+      formData.append("name", name);
+      formData.append("price", price);
+      formData.append("description", description);
 
-      if (json.success) {
-        alert("Produk Berhasil Ditambahkan! 🎉");
-        setFormData({ name: "", price: "", description: "", images: [""] }); // Reset Form
-        fetchProducts(); // Refresh List
-      } else {
-        alert("Gagal: " + json.message);
+      // 2. Masukkan semua file gambar ke key "images"
+      // (Harus loop manual karena FileList bukan array biasa)
+      for (let i = 0; i < files.length; i++) {
+        formData.append("images", files[i]);
       }
-    } catch (err) {
-      console.log(err);
-      alert("Error Server");
+
+      // 3. Panggil API
+      const response = await createProduct(token, formData);
+      const responseBody = await response.json();
+
+      if (response.status === 201) {
+        await alertSuccess("Produk berhasil dibuat!");
+        // Reset Form
+        setName("");
+        setPrice("");
+        setDescription("");
+        setFiles([]);
+        document.getElementById("fileInput").value = ""; // Reset input file HTML
+        fetchProducts(); // Refresh list kanan
+      } else {
+        await alertError(responseBody.message || "Gagal upload");
+      }
+    } catch (error) {
+      console.error(error);
+      await alertError("Terjadi kesalahan sistem");
     } finally {
       setIsLoading(false);
     }
-  };
+  }
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
@@ -96,82 +93,67 @@ export default function AdminDashboard() {
             </h2>
 
             <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Nama */}
               <div>
                 <label className="text-sm font-bold text-[#3e362e]">Nama Produk</label>
                 <input
                   required
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
                   className="w-full border-2 border-[#e5e0d8] rounded-lg p-2 mt-1 focus:border-[#8da399] outline-none"
                   placeholder="Contoh: Stiker Kucing"
                 />
               </div>
 
+              {/* Harga */}
               <div>
                 <label className="text-sm font-bold text-[#3e362e]">Harga (Rp)</label>
                 <input
                   required
                   type="number"
-                  name="price"
-                  value={formData.price}
-                  onChange={handleChange}
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
                   className="w-full border-2 border-[#e5e0d8] rounded-lg p-2 mt-1 focus:border-[#8da399] outline-none"
                   placeholder="15000"
                 />
               </div>
 
+              {/* Deskripsi */}
               <div>
                 <label className="text-sm font-bold text-[#3e362e]">Deskripsi</label>
                 <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
+                  required
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
                   className="w-full border-2 border-[#e5e0d8] rounded-lg p-2 mt-1 focus:border-[#8da399] outline-none h-24 resize-none"
                   placeholder="Deskripsi singkat..."
                 />
               </div>
 
-              {/* Dynamic Image URLs */}
+              {/* Upload Gambar (Penting: Type File) */}
               <div>
-                <label className="text-sm font-bold text-[#3e362e] flex justify-between items-center">
-                  Foto Produk
-                  <button
-                    type="button"
-                    onClick={addImageField}
-                    className="text-xs text-[#d68c76] font-bold hover:underline">
-                    + Tambah URL
-                  </button>
-                </label>
-                <div className="space-y-2 mt-2">
-                  {formData.images.map((url, index) => (
-                    <div key={index} className="flex gap-2">
-                      <div className="relative w-full">
-                        <LinkIcon size={14} className="absolute left-3 top-3 text-gray-400" />
-                        <input
-                          value={url}
-                          onChange={(e) => handleImageChange(index, e.target.value)}
-                          className="w-full border-2 border-[#e5e0d8] rounded-lg p-2 pl-9 text-sm focus:border-[#8da399] outline-none"
-                          placeholder="https://..."
-                        />
-                      </div>
-                      {formData.images.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removeImageField(index)}
-                          className="text-red-400 hover:text-red-600">
-                          <Trash2 size={18} />
-                        </button>
-                      )}
-                    </div>
-                  ))}
+                <label className="text-sm font-bold text-[#3e362e] mb-1 block">Foto Produk (Wajib)</label>
+                <div className="border-2 border-dashed border-[#e5e0d8] rounded-lg p-4 text-center hover:border-[#8da399] transition-colors">
+                  <input
+                    id="fileInput"
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    required
+                    className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-[#3e362e] file:text-white hover:file:bg-[#5a4e44]"
+                  />
+                  <p className="text-xs text-gray-400 mt-2">
+                    {files.length > 0 ? `${files.length} file dipilih` : "Pilih satu atau banyak gambar"}
+                  </p>
                 </div>
               </div>
 
+              {/* Tombol Simpan */}
               <button
                 disabled={isLoading}
                 type="submit"
-                className="w-full bg-[#3e362e] text-white font-bold py-3 rounded-lg hover:bg-[#8da399] transition-all flex justify-center items-center gap-2">
+                className="w-full bg-[#3e362e] text-white font-bold py-3 rounded-lg hover:bg-[#5a4e44] transition-all flex justify-center items-center gap-2 disabled:opacity-50">
                 {isLoading ? (
                   "Menyimpan..."
                 ) : (
@@ -187,6 +169,7 @@ export default function AdminDashboard() {
         {/* LIST PRODUK (Kanan) */}
         <div className="lg:col-span-2 space-y-4">
           <h2 className="font-bold text-xl text-[#3e362e]">Daftar Produk ({products.length})</h2>
+
           {products.length === 0 && <p className="text-gray-400 italic">Belum ada produk.</p>}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -199,18 +182,18 @@ export default function AdminDashboard() {
                     src={product.image_url || "https://placehold.co/100"}
                     alt={product.name}
                     className="w-full h-full object-cover"
-                    onError={(e) => (e.target.src = "https://placehold.co/100?text=No+Img")}
+                    onError={(e) => (e.target.src = "https://placehold.co/100?text=Error")}
                   />
                 </div>
                 <div className="flex-grow">
-                  <h3 className="font-bold text-[#3e362e]">{product.name}</h3>
+                  <h3 className="font-bold text-[#3e362e] line-clamp-1">{product.name}</h3>
                   <p className="text-[#8da399] font-bold text-sm">
                     Rp {parseInt(product.price).toLocaleString("id-ID")}
                   </p>
-                  <p className="text-xs text-gray-400 mt-1 line-clamp-1">{product.description}</p>
+                  <p className="text-xs text-gray-400 mt-1 line-clamp-2">{product.description}</p>
                 </div>
                 {/* Indikator jumlah foto */}
-                {product.images && Array.isArray(product.images) && product.images.length > 1 && (
+                {product.images && product.images.length > 1 && (
                   <span className="text-xs bg-[#f3f0e9] px-2 py-1 rounded text-[#8c8478] flex items-center gap-1">
                     <ImageIcon size={10} /> +{product.images.length - 1}
                   </span>
