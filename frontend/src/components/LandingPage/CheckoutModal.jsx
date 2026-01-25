@@ -80,7 +80,7 @@ export const CheckoutModal = ({ isOpen, onClose, product, onSubmit }) => {
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}>
             <div
-              className="relative w-full h-full aspect-[4/5] md:aspect-auto md:h-full overflow-hidden bg-white group cursor-zoom-in"
+              className="relative w-full h-full aspect-4/5 md:aspect-auto md:h-full overflow-hidden bg-white group cursor-zoom-in"
               onClick={() => setIsZoomOpen(true)}>
               <img
                 onContextMenu={(e) => e.preventDefault()} // Mencegah klik kanan
@@ -144,7 +144,7 @@ export const CheckoutModal = ({ isOpen, onClose, product, onSubmit }) => {
               {/* Deskripsi: Bye-bye kotak coklat, Hello Editorial Style */}
               <div className="relative">
                 <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#3E362E]/10 rounded-full" />
-                <p className="pl-5 text-sm md:text-base text-[#6B5E51] leading-relaxed italic font-medium">
+                <p className="pl-5 text-sm md:text-base text-[#6B5E51] leading-relaxed italic font-medium whitespace-pre-line">
                   "{product.description || "Koleksi aset digital eksklusif untuk kebutuhan kreatifmu."}"
                 </p>
               </div>

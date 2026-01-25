@@ -5,6 +5,7 @@ import { useLocalStorage } from "react-use";
 import { alertError, alertSuccess } from "../../../lib/alert";
 import { useNavigate } from "react-router";
 import { createPortal } from "react-dom"; // Tambahkan untuk Lightbox
+import TextAreaAutosize from "react-textarea-autosize";
 
 export default function ProductForm() {
   const [token] = useLocalStorage("token", "");
@@ -107,11 +108,12 @@ export default function ProductForm() {
             {/* Deskripsi */}
             <div>
               <label className="text-sm font-bold text-[#3e362e]">Deskripsi</label>
-              <textarea
+              <TextAreaAutosize
+                minRows={4}
                 required
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full border-2 border-[#e5e0d8] rounded-lg p-3 mt-1 focus:border-[#8da399] outline-none h-32 resize-none transition-all"
+                className="w-full border-2 border-[#e5e0d8] rounded-lg p-3 mt-1 focus:border-[#8da399] outline-none resize-none transition-all"
                 placeholder="Jelaskan detail stiker..."
               />
             </div>

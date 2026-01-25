@@ -4,6 +4,7 @@ import { Save, X, UploadCloud } from "lucide-react";
 import { productUpdate } from "../../../lib/api/ProductApi";
 import { alertSuccess, alertError } from "../../../lib/alert";
 import { useLocalStorage } from "react-use";
+import TextAreaAutosize from "react-textarea-autosize";
 
 export default function EditProductModal({ product, isOpen, onClose, onSuccess }) {
   const [token] = useLocalStorage("token", "");
@@ -154,10 +155,11 @@ export default function EditProductModal({ product, isOpen, onClose, onSuccess }
 
                   <div className="md:col-span-2">
                     <label className="block text-sm font-bold text-[#3e362e] mb-1">Deskripsi</label>
-                    <textarea
+                    <TextAreaAutosize
+                      minRows={4}
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
-                      className="w-full border-2 border-[#e5e0d8] rounded-lg p-3 h-24 resize-none focus:border-[#8da399] outline-none transition"
+                      className="w-full border-2 border-[#e5e0d8] rounded-lg p-3 resize-none focus:border-[#8da399] outline-none transition"
                       required
                     />
                   </div>
