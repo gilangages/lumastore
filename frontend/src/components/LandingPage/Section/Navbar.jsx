@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import { Menu, X } from "lucide-react"; // Ikon Gunting biar 'artsy'
-import logoLuma from "../../../assets/lumasticker.png";
+import { Menu, X, Scissors } from "lucide-react"; // Ikon Gunting biar 'artsy'
 
 export const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -26,13 +25,11 @@ export const Navbar = () => {
       <div className="max-w-6xl mx-auto px-6 flex items-center justify-between">
         {/* LOGO BARU: Crafty Style */}
         <div
-          className="flex items-center  cursor-pointer group"
+          className="flex items-center gap-2 cursor-pointer group"
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
-          <img
-            src={logoLuma}
-            alt="LumaSticker Logo"
-            className="h-10 w-auto object-contain" /* Atur h-10 (40px) atau h-12 sesuai selera */
-          />
+          <div className="bg-[#3E362E] text-[#FDFCF8] p-2 rounded-lg rotate-[-6deg] group-hover:rotate-0 transition-transform duration-300 shadow-[2px_2px_0px_0px_rgba(214,140,118,1)]">
+            <Scissors size={20} />
+          </div>
           <span className="font-black text-2xl text-[#3E362E] tracking-tight">
             Luma<span className="text-[#8DA399]">Sticker</span>.
           </span>
