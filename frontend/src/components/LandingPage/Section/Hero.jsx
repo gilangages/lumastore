@@ -1,5 +1,4 @@
 import { Ghost, Cat, Cookie, Bird, Sparkles } from "lucide-react";
-import logoLuma from "../../../assets/lumasticker.png"; // <-- 1. Import Logo
 
 export const Hero = () => {
   const scrollToSection = (id) => {
@@ -12,7 +11,7 @@ export const Hero = () => {
   };
 
   return (
-    <section className="pt-28 pb-16 md:pt-32 md:pb-20 px-6 text-center max-w-6xl mx-auto relative overflow-hidden">
+    <section className="pt-44 pb-24 px-6 text-center max-w-6xl mx-auto relative overflow-hidden">
       {/* --- DEKORASI STIKER (POSISI DIPERBAIKI) --- */}
       {/* Sekarang posisinya "left-4" (masuk dkit), bukan "-left-4" (keluar) */}
 
@@ -46,30 +45,19 @@ export const Hero = () => {
       <div className="absolute top-24 left-1/2 -translate-x-1/2 w-64 h-64 bg-[#E8D5C4]/40 rounded-full blur-[80px] -z-20 mix-blend-multiply"></div>
 
       {/* --- KONTEN UTAMA --- */}
-      <div className="relative z-10 flex flex-col items-center">
-        <span className="bg-white border-2 border-[#3E362E] text-[#3E362E] px-4 py-1.5 rounded-lg text-sm font-bold shadow-[4px_4px_0px_0px_rgba(62,54,46,1)] mb-4 inline-block rotate-[-2deg]">
+      <div className="relative z-10">
+        <span className="bg-white border-2 border-[#3E362E] text-[#3E362E] px-4 py-1.5 rounded-lg text-sm font-bold shadow-[4px_4px_0px_0px_rgba(62,54,46,1)] mb-8 inline-block rotate-[-2deg]">
           ✂️ Printable Stickers
         </span>
 
-        {/* --- LOGO MASKOT BESAR (HERO IMAGE) --- */}
-        {/* Ini dia bintang utamanya! */}
-        <div className="mb-4 flex justify-center relative group">
-          <div className="absolute inset-0 bg-[#D68C76] rounded-full blur-[40px] opacity-20 group-hover:opacity-30 transition-opacity"></div>
-          <img
-            src={logoLuma}
-            alt="Maskot LumaSticker"
-            className="h-32 md:h-48 w-auto object-contain drop-shadow-lg relative z-10 hover:scale-105 transition-transform duration-500 ease-in-out"
-          />
-        </div>
-
-        <h1 className="text-4xl md:text-6xl font-black text-[#3E362E] mb-4 leading-tight tracking-tight">
+        <h1 className="text-4xl md:text-6xl font-black text-[#3E362E] mb-6 leading-tight tracking-tight">
           Stiker Lucu Buatan <br />
           <span className="text-[#8DA399] underline decoration-[#D68C76] decoration-wavy decoration-4 underline-offset-4">
             Sendiri.
           </span>
         </h1>
 
-        <p className="text-lg md:text-xl text-[#6B5E51] mb-8 max-w-xl mx-auto leading-relaxed font-medium">
+        <p className="text-lg md:text-xl text-[#6B5E51] mb-10 max-w-xl mx-auto leading-relaxed font-medium">
           Hai! Aku hobi gambar stiker. Di sini kamu bisa beli file digitalnya (ZIP), isi stiker transparan & lembaran A4
           siap print. Tinggal print, gunting, tempel deh!
         </p>

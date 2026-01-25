@@ -1,4 +1,4 @@
-import logoLuma from "../../../assets/lumasticker.png"; // Import logo kamu
+import logoLuma from "../../../assets/luma-sticker.png"; // Import logo kamu
 
 export const Footer = () => {
   return (
@@ -10,13 +10,11 @@ export const Footer = () => {
           <img
             src={logoLuma}
             alt="LumaSticker Giant Logo"
-            className="h-24 md:h-32 w-auto object-contain drop-shadow-sm opacity-90 grayscale-[20%] hover:grayscale-0 transition-all duration-500"
+            className="h-32 w-auto object-contain  hover:scale-110 transition-all duration-500"
           />
           <div>
             <h3 className="font-black text-2xl text-[#3E362E]">LumaSticker.</h3>
-            <p className="text-[#6B5E51] text-sm mt-1 max-w-xs leading-relaxed">
-              Bikin harimu lebih nempel di hati dengan stiker lucu-lucuan buat jurnal kamu.
-            </p>
+            <p className="text-[#6B5E51] text-sm mt-1 max-w-xs leading-relaxed">Stiker lucu-lucuan buat jurnal kamu.</p>
           </div>
         </div>
 
