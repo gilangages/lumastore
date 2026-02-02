@@ -72,10 +72,8 @@ export default function ProductList() {
     setIsLoading(true);
     try {
       const response = await bulkDeleteProducts(token, selectedIds);
-      const responseBody = await response.json();
-      console.log(responseBody);
       if (response.ok) {
-        await alertSuccess(responseBody.message);
+        await alertSuccess("Produk berhasil dihapus!");
         setSelectedIds([]);
         setIsSelectionMode(false);
         setReload(!reload);
@@ -137,8 +135,9 @@ export default function ProductList() {
   async function handleDelete(id) {
     if (!(await alertConfirm("Apakah kamu yakin mau menghapus produk ini?"))) return;
     const response = await productDelete(token, id);
+    const responseBody = await response.json();
     if (response.status === 200) {
-      await alertSuccess("Produk berhasil dihapus!");
+      await alertSuccess(responseBody.message);
       setReload(!reload);
     } else {
       const responseBody = await response.json();

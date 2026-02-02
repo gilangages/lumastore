@@ -40,6 +40,7 @@ const createTransaction = async (req, res) => {
         first_name: customer_name,
         email: customer_email,
       },
+
       item_details: [
         {
           id: product.id,
