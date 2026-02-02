@@ -72,8 +72,9 @@ export default function ProductList() {
     setIsLoading(true);
     try {
       const response = await bulkDeleteProducts(token, selectedIds);
+      const responseBody = await response.json();
       if (response.ok) {
-        await alertSuccess("Produk berhasil dihapus!");
+        await alertSuccess(responseBody.message);
         setSelectedIds([]);
         setIsSelectionMode(false);
         setReload(!reload);
