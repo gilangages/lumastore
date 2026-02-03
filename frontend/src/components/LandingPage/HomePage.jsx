@@ -78,21 +78,16 @@ export const HomePage = () => {
         // 2. Siapkan Link WhatsApp
         const adminNumber = "6283824032460"; // Nomor sesuai floating button kamu
 
-        // TEKNIK ANTI-ERROR ENCODING:
-        // Kita pakai kode angka biar browser yang generate emojinya
-        const emojiHand = String.fromCodePoint(0x1f44b); // 👋
-        const emojiSparkles = String.fromCodePoint(0x2728); // ✨
-        const emojiMoney = String.fromCodePoint(0x1f4b0); // 💰
-
-        // Masukkan variabel emoji di atas ke dalam pesan
-        const message = `Halo LumaSticker! ${emojiHand}
+        // FIX: Langsung pakai emoji asli di dalam string (Backtick)
+        // encodeURIComponent akan otomatis mengubahnya menjadi format URL yang aman
+        const message = `Halo Admin LumaSticker!
 
 Saya mau bungkus stiker ini:
-        ${emojiSparkles} *${product.name}*
-        ${emojiMoney} Harga: Rp ${parseInt(product.price).toLocaleString("id-ID")}
+Nama produk: *${product.name}*
+Harga      :  Rp ${parseInt(product.price).toLocaleString("id-ID")}
 
-        Mohon dicek bukti transfer saya (terlampir).
-        Terima kasih!`.trim();
+Mohon dicek bukti transfer saya (terlampir).
+Terima kasih!`.trim();
 
         const waUrl = `https://wa.me/${adminNumber}?text=${encodeURIComponent(message)}`;
 

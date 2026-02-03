@@ -73,6 +73,12 @@ export const Navbar = () => {
             className="text-[#6B5E51] font-bold hover:text-[#3E362E] transition">
             Koleksi
           </button>
+          {/* MENU BARU: CARA ORDER */}
+          <button
+            onClick={() => handleNavigation("howto")}
+            className="text-[#6B5E51] font-bold hover:text-[#3E362E] transition">
+            Cara Order
+          </button>
           <button
             onClick={() => handleNavigation("benefits")}
             className="text-[#6B5E51] font-bold hover:text-[#3E362E] transition">
@@ -103,6 +109,11 @@ export const Navbar = () => {
             onClick={() => handleNavigation("products")}
             className="text-left text-[#3E362E] font-bold py-2 border-b border-dashed border-[#E5E0D8]">
             Koleksi
+          </button>
+          <button
+            onClick={() => handleNavigation("howto")}
+            className="text-left text-[#3E362E] font-bold py-2 border-b border-dashed border-[#E5E0D8]">
+            Cara Order
           </button>
           <button
             onClick={() => handleNavigation("benefits")}
