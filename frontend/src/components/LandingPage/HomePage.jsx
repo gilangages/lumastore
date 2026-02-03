@@ -6,6 +6,7 @@ import { purchaseProduct } from "../../lib/api/PaymentApi";
 import { Navbar } from "./Section/Navbar";
 import { Hero } from "./Section/Hero";
 import { Benefits } from "./Section/Benefits";
+import { HowToOrder } from "./Section/HowToOrder"; // PASTIKAN FILE INI SUDAH DIBUAT
 import { ProductShowcase } from "./Section/ProductShowcase";
 import { FAQ } from "./Section/FAQ";
 import { Footer } from "./Section/Footer";
@@ -15,7 +16,7 @@ import { SuccessModal } from "./SuccessModal";
 import { ErrorModal } from "./ErrorModal";
 
 export const HomePage = () => {
-  // Inisialisasi dengan array kosong, bukan DUMMY_PRODUCTS
+  // Inisialisasi dengan array kosong
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -37,24 +38,7 @@ export const HomePage = () => {
   };
 
   useEffect(() => {
-    // 1. Cek Pesan Sukses Midtrans dari LocalStorage
-    const paymentStatus = localStorage.getItem("paymentSuccess");
-    if (paymentStatus === "true") {
-      setTimeout(() => {
-        setIsSuccessOpen(true);
-      }, 500);
-      localStorage.removeItem("paymentSuccess");
-    }
-
-    // 2. Setup Snap Midtrans
-    const clientKey = "Mid-client-9k6P5r8pEQkQaEan"; // Pastikan Key Sesuai
-    const script = document.createElement("script");
-    script.src = "https://app.sandbox.midtrans.com/snap/snap.js";
-    script.setAttribute("data-client-key", clientKey);
-    script.async = true;
-    document.body.appendChild(script);
-
-    // 3. Fetch Data Real
+    // 1. Fetch Data Real (Logic Midtrans dihapus karena pindah ke WA)
     getAllProducts()
       .then((res) => {
         if (!res.ok) throw new Error("Gagal memuat data");
@@ -64,59 +48,68 @@ export const HomePage = () => {
         if (json.data && json.data.length > 0) {
           setProducts(json.data);
         } else {
-          // Jika tidak ada data, set array kosong (JANGAN GUNAKAN DUMMY)
           setProducts([]);
         }
       })
       .catch((err) => {
         console.error("Error fetching products:", err);
-        // Jika error, biarkan kosong agar tidak membingungkan user dengan produk palsu
         setProducts([]);
-        // Optional: Tidak perlu show error popup jika hanya masalah fetch (cukup console)
-        // atau gunakan UI state error di bagian ProductShowcase
       })
       .finally(() => setLoading(false));
-
-    return () => {
-      if (document.body.contains(script)) document.body.removeChild(script);
-    };
   }, []);
 
-  const handleProcessPayment = async (product, customerName, customerEmail) => {
+  // --- LOGIC BARU: PROCESS PAYMENT VIA WHATSAPP ---
+  // Parameter hanya 'product' karena input nama/email sudah dihapus dari modal
+  const handleProcessPayment = async (product) => {
     setIsModalOpen(false);
 
     try {
+      // 1. Panggil API Backend agar transaksi tercatat di Database Admin (Order History)
+      // Kita kirim data dummy/placeholder karena user tidak input nama lagi
       const res = await purchaseProduct({
         product_id: product.id,
-        customer_name: customerName,
-        customer_email: customerEmail,
+        customer_name: "Guest WhatsApp",
+        customer_email: "verifikasi@whatsapp.com",
       });
+
       const data = await res.json();
 
-      if (data.token && window.snap) {
-        window.snap.pay(data.token, {
-          onSuccess: (result) => {
-            console.log("Success:", result);
-            localStorage.setItem("paymentSuccess", "true");
-            window.location.reload();
-          },
-          onPending: (result) => {
-            console.log("Pending Result:", result);
-            showError("Pembayaran tertunda. Cek riwayat transaksimu.");
-          },
-          onError: (result) => {
-            console.error("Error Result:", result);
-            showError("Pembayaran gagal. Silakan coba lagi.");
-          },
-          onClose: () => {
-            console.log("Popup closed");
-          },
-        });
+      if (data.success) {
+        // 2. Siapkan Link WhatsApp
+        const adminNumber = "6283824032460"; // Nomor sesuai floating button kamu
+
+        // TEKNIK ANTI-ERROR ENCODING:
+        // Kita pakai kode angka biar browser yang generate emojinya
+        const emojiHand = String.fromCodePoint(0x1f44b); // 👋
+        const emojiSparkles = String.fromCodePoint(0x2728); // ✨
+        const emojiMoney = String.fromCodePoint(0x1f4b0); // 💰
+
+        // Masukkan variabel emoji di atas ke dalam pesan
+        const message = `Halo LumaSticker! ${emojiHand}
+
+Saya mau bungkus stiker ini:
+        ${emojiSparkles} *${product.name}*
+        ${emojiMoney} Harga: Rp ${parseInt(product.price).toLocaleString("id-ID")}
+
+        Mohon dicek bukti transfer saya (terlampir).
+        Terima kasih!`.trim();
+
+        const waUrl = `https://wa.me/${adminNumber}?text=${encodeURIComponent(message)}`;
+
+        // 3. Buka WhatsApp di Tab Baru
+        window.open(waUrl, "_blank");
+
+        // Optional: Tampilkan sukses modal sebentar biar user tau proses berhasil
+        // setIsSuccessOpen(true);
       } else {
-        showError("Gagal mendapatkan token: " + (data.message || "Unknown Error"));
+        showError("Gagal membuat pesanan: " + (data.message || "Unknown Error"));
       }
     } catch (error) {
-      showError("Error Sistem: " + error.message);
+      console.error("Error Sistem:", error);
+      // Fallback: Jika backend error, tetap arahkan ke WA manual agar user tidak kecewa
+      const adminNumber = "6283824032460";
+      const message = `Halo LumaSticker, saya mau beli ${product.name}. (Sistem Error, mohon bantu manual)`;
+      window.open(`https://wa.me/${adminNumber}?text=${encodeURIComponent(message)}`, "_blank");
     }
   };
 
@@ -127,7 +120,9 @@ export const HomePage = () => {
         <Hero />
         <Benefits />
 
-        {/* ProductShowcase akan menampilkan pesan kosong jika products = [] */}
+        {/* SECTION CARA ORDER (Timeline Vertical) DITAMBAHKAN DISINI */}
+        <HowToOrder />
+
         <ProductShowcase products={products} loading={loading} onBuy={handleOpenModal} />
 
         <FAQ />

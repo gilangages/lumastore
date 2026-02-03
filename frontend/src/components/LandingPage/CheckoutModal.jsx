@@ -1,10 +1,9 @@
-import { X, Lock, ChevronLeft, ChevronRight, Image as ImageIcon, Mail, Check } from "lucide-react";
+import { X, Lock, ChevronLeft, ChevronRight, Image as ImageIcon, Mail, Check, MessageCircle } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router";
 
 export const CheckoutModal = ({ isOpen, onClose, product, onSubmit }) => {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  // --- STATE YANG DIHAPUS: name & email (Sudah tidak perlu) ---
   const [currentImgIdx, setCurrentImgIdx] = useState(0);
   const [isZoomOpen, setIsZoomOpen] = useState(false);
   const [isAgreed, setIsAgreed] = useState(false);
@@ -12,7 +11,7 @@ export const CheckoutModal = ({ isOpen, onClose, product, onSubmit }) => {
   const touchStartX = useRef(null);
   const touchEndX = useRef(null);
 
-  // --- NORMALISASI DATA IMAGES ---
+  // --- NORMALISASI DATA IMAGES (TIDAK DIUBAH) ---
   const getNormalizedImages = () => {
     if (!product) return [];
 
@@ -106,7 +105,8 @@ export const CheckoutModal = ({ isOpen, onClose, product, onSubmit }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!isAgreed) return;
-    onSubmit(product, name, email);
+    // LOGIC UPDATE: Hanya kirim product, tanpa nama/email
+    onSubmit(product);
   };
 
   return (
@@ -120,7 +120,7 @@ export const CheckoutModal = ({ isOpen, onClose, product, onSubmit }) => {
             <X size={18} color="#3E362E" strokeWidth={3} />
           </button>
 
-          {/* KOLOM KIRI (FOTO) */}
+          {/* KOLOM KIRI (FOTO - TIDAK DIUBAH) */}
           <div
             className="w-full md:w-1/2 bg-[#EAE7DF] relative overflow-hidden"
             onTouchStart={handleTouchStart}
@@ -138,7 +138,7 @@ export const CheckoutModal = ({ isOpen, onClose, product, onSubmit }) => {
                 onError={(e) => (e.target.src = "https://placehold.co/600x600?text=No+Image")}
               />
 
-              {/* Label Floating di Modal (Tetap Ada) */}
+              {/* Label Floating di Modal */}
               {currentImage?.label && (
                 <div className="absolute top-4 left-4 z-20">
                   <div className="px-3 py-1.5 bg-white/90 backdrop-blur border border-[#3E362E]/10 rounded-full shadow-sm">
@@ -185,7 +185,7 @@ export const CheckoutModal = ({ isOpen, onClose, product, onSubmit }) => {
             )}
           </div>
 
-          {/* KOLOM KANAN (FORM) */}
+          {/* KOLOM KANAN (FORM - DIUPDATE JADI INFO ONLY) */}
           <div className="w-full md:w-1/2 p-6 md:p-10 flex flex-col overflow-y-auto bg-[#FDFCF8]">
             <div className="mb-8">
               <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#3E362E]/5 rounded-lg mb-4 border border-[#3E362E]/10">
@@ -205,69 +205,50 @@ export const CheckoutModal = ({ isOpen, onClose, product, onSubmit }) => {
               </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-[#3E362E]/40 ml-1">
-                    Nama Kamu
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    className="w-full px-5 py-4 rounded-2xl bg-[#F3F0E9]/30 border-2 border-[#E5E0D8] focus:border-[#3E362E] focus:bg-white outline-none transition-all text-[#3E362E] font-bold placeholder:text-[#3E362E]/20"
-                    placeholder="Masukkan namamu..."
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-[#3E362E]/40 ml-1">
-                    Email Pengiriman
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    className="w-full px-5 py-4 rounded-2xl bg-[#F3F0E9]/30 border-2 border-[#E5E0D8] focus:border-[#3E362E] focus:bg-white outline-none transition-all text-[#3E362E] font-bold placeholder:text-[#3E362E]/20"
-                    placeholder="email@kamu.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
-                  <div className="flex gap-2 items-start mt-3 ml-1">
-                    <Mail size={14} className="mt-0.5 text-[#3E362E]/30" />
-                    <p className="text-[10px] font-bold text-[#3E362E]/40 leading-snug">
-                      Produk akan dikirim secara instan ke email ini setelah verifikasi.
-                    </p>
+            {/* FORM AREA */}
+            <form onSubmit={handleSubmit} className="space-y-6 flex-grow flex flex-col justify-end">
+              {/* BAGIAN BARU: INSTRUKSI LANGKAH SELANJUTNYA (Pengganti Input Nama/Email) */}
+              <div className="bg-[#F3F0E9] p-5 rounded-2xl border-2 border-[#E5E0D8] space-y-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="bg-[#3E362E] text-white p-1 rounded-full">
+                    <MessageCircle size={14} />
                   </div>
+                  <p className="text-xs font-black uppercase tracking-wider text-[#3E362E]">Langkah Selanjutnya</p>
                 </div>
 
-                <div className="pt-2">
+                <ul className="space-y-2 text-xs md:text-sm text-[#6B5E51] font-medium leading-relaxed list-disc pl-4">
+                  <li>
+                    Kamu akan diarahkan ke <strong>WhatsApp Admin</strong>.
+                  </li>
+                  <li>Kirim pesan order yang otomatis muncul.</li>
+                  <li>Admin akan mengirimkan link download setelah bukti transfer diterima.</li>
+                </ul>
+              </div>
+
+              <div className="pt-2">
+                <div
+                  className="flex items-start gap-3 group cursor-pointer select-none"
+                  onClick={() => setIsAgreed(!isAgreed)}>
                   <div
-                    className="flex items-start gap-3 group cursor-pointer select-none"
-                    onClick={() => setIsAgreed(!isAgreed)}>
-                    <div
-                      className={`w-5 h-5 mt-0.5 shrink-0 rounded border-2 flex items-center justify-center transition-all duration-200 ${
-                        isAgreed
-                          ? "bg-[#3E362E] border-[#3E362E]"
-                          : "bg-white border-[#E5E0D8] group-hover:border-[#8DA399]"
-                      }`}>
-                      {isAgreed && <Check size={14} className="text-[#FDFCF8]" strokeWidth={4} />}
-                    </div>
-
-                    <p className="text-xs text-[#6B5E51] font-medium leading-snug">
-                      Saya menyetujui{" "}
-                      <Link to="/terms" className="underline decoration-dotted hover:text-[#3E362E] transition-colors">
-                        Syarat & Ketentuan
-                      </Link>{" "}
-                      serta{" "}
-                      <Link
-                        to="/privacy"
-                        className="underline decoration-dotted hover:text-[#3E362E] transition-colors">
-                        Kebijakan Privasi
-                      </Link>
-                      .
-                    </p>
+                    className={`w-5 h-5 mt-0.5 shrink-0 rounded border-2 flex items-center justify-center transition-all duration-200 ${
+                      isAgreed
+                        ? "bg-[#3E362E] border-[#3E362E]"
+                        : "bg-white border-[#E5E0D8] group-hover:border-[#8DA399]"
+                    }`}>
+                    {isAgreed && <Check size={14} className="text-[#FDFCF8]" strokeWidth={4} />}
                   </div>
+
+                  <p className="text-xs text-[#6B5E51] font-medium leading-snug">
+                    Saya menyetujui{" "}
+                    <Link to="/terms" className="underline decoration-dotted hover:text-[#3E362E] transition-colors">
+                      Syarat & Ketentuan
+                    </Link>{" "}
+                    serta{" "}
+                    <Link to="/privacy" className="underline decoration-dotted hover:text-[#3E362E] transition-colors">
+                      Kebijakan Privasi
+                    </Link>
+                    .
+                  </p>
                 </div>
               </div>
 
@@ -282,16 +263,21 @@ export const CheckoutModal = ({ isOpen, onClose, product, onSubmit }) => {
                     </span>
                   </div>
 
+                  {/* BUTTON DIUPDATE: Jadi Hijau WA & Icon MessageCircle */}
                   <button
                     type="submit"
                     disabled={!isAgreed}
                     className={
                       isAgreed
-                        ? "w-full bg-[#3E362E] hover:bg-[#8DA399] text-[#FDFCF8] font-black py-4 rounded-xl shadow-[4px_4px_0px_0px_rgba(141,163,153,1)] hover:-translate-y-1 active:translate-y-0 active:shadow-none transition-all flex justify-center items-center gap-3 uppercase tracking-widest text-sm group border-2 border-[#3E362E]"
+                        ? "w-full bg-[#25D366] hover:bg-[#20bd5a] text-white font-black py-4 rounded-xl shadow-[4px_4px_0px_0px_rgba(32,189,90,1)] hover:-translate-y-1 active:translate-y-0 active:shadow-none transition-all flex justify-center items-center gap-3 uppercase tracking-widest text-sm group border-2 border-[#25D366]"
                         : "w-full bg-[#E5E0D8] text-[#3E362E]/40 font-black py-4 rounded-xl flex justify-center items-center gap-3 uppercase tracking-widest text-sm border-2 border-[#E5E0D8] cursor-not-allowed"
                     }>
-                    <Lock size={18} className={isAgreed ? "group-hover:rotate-12 transition-transform" : ""} />
-                    Bungkus Sekarang
+                    <MessageCircle
+                      size={20}
+                      className={isAgreed ? "group-hover:-rotate-12 transition-transform" : ""}
+                      fill="white"
+                    />
+                    Bungkus via WhatsApp
                   </button>
                 </div>
               </div>
@@ -300,17 +286,17 @@ export const CheckoutModal = ({ isOpen, onClose, product, onSubmit }) => {
         </div>
       </div>
 
-      {/* --- LIGHTBOX ZOOM FULLSCREEN --- */}
+      {/* --- LIGHTBOX ZOOM FULLSCREEN (TIDAK DIUBAH) --- */}
       {isZoomOpen && (
         <div
           className="fixed inset-0 z-[100] bg-[#3E362E]/95 flex items-center justify-center animate-fadeIn"
           onClick={() => setIsZoomOpen(false)}>
-          {/* BUTTON CLOSE (Kanan Atas) */}
+          {/* BUTTON CLOSE */}
           <button className="absolute top-6 right-6 text-white bg-white/10 p-3 rounded-full border border-white/20 hover:bg-white/20 transition-all z-[110]">
             <X size={32} />
           </button>
 
-          {/* LABEL (Kiri Atas) - PERBAIKAN: Dipindah kesini agar tidak tabrakan dengan counter */}
+          {/* LABEL */}
           {currentImage?.label && (
             <div className="absolute top-6 left-6 z-[110]">
               <div className="bg-black/60 backdrop-blur px-5 py-2.5 rounded-full border border-white/20">
@@ -347,7 +333,7 @@ export const CheckoutModal = ({ isOpen, onClose, product, onSubmit }) => {
             />
           </div>
 
-          {/* COUNTER (Bawah Tengah) */}
+          {/* COUNTER */}
           <div className="absolute bottom-10">
             <div className="text-white font-black tracking-widest text-xs bg-black/40 px-6 py-2.5 rounded-full backdrop-blur-md border border-white/10 uppercase">
               {currentImgIdx + 1} / {images.length}

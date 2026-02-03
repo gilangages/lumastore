@@ -1,5 +1,4 @@
 // frontend/src/components/LandingPage/TermsAndConditions.jsx
-
 import React, { useEffect } from "react";
 import { Navbar } from "./Section/Navbar";
 import { Footer } from "./Section/Footer";
@@ -22,61 +21,61 @@ export default function TermsAndConditions() {
           <section>
             <h2 className="text-xl font-bold text-[#3E362E] mb-3">1. Produk Digital</h2>
             <p>
-              Produk yang dijual di LumaSticker adalah <strong>produk digital (softcopy)</strong> dalam format ZIP yang
-              isinya adalah file PNG. <strong>Tidak ada produk fisik</strong> yang akan dikirim ke alamat rumah Anda.
+              Produk yang dijual di LumaSticker adalah <strong>aset digital (softcopy)</strong>.
+              <strong>Tidak ada produk fisik</strong> yang dikirim ke rumah. File dikirim via Email atau WhatsApp.
             </p>
           </section>
 
-          {/* 2. Pemesanan & Data Pengguna (SESUAI REQUEST: CUMA NAMA & EMAIL) */}
+          {/* 2. Pemesanan & Pembayaran (REVISI: WHATSAPP) */}
           <section>
-            <h2 className="text-xl font-bold text-[#3E362E] mb-3">2. Pemesanan & Data Pengguna</h2>
+            <h2 className="text-xl font-bold text-[#3E362E] mb-3">2. Pemesanan & Pembayaran</h2>
             <ul className="list-disc pl-5 space-y-2">
               <li>
-                Saat melakukan pembelian, Anda hanya diminta mengisi <strong>Nama</strong> dan{" "}
-                <strong>Alamat Email</strong>.
+                Pemesanan dilakukan melalui website, namun{" "}
+                <strong>penyelesaian pembayaran dilakukan via WhatsApp</strong> resmi LumaSticker.
               </li>
               <li>
-                Pastikan alamat email yang Anda masukkan <strong>aktif dan benar</strong>. Kami tidak bertanggung jawab
-                atas kegagalan pengiriman file jika Anda salah memasukkan alamat email.
+                Setelah mengisi data, Anda akan diarahkan ke WhatsApp untuk mengirim format order dan melakukan transfer
+                manual (Bank/E-Wallet).
+              </li>
+              <li>
+                Harap gunakan <strong>data asli</strong> agar kami mudah menghubungi Anda jika terjadi kendala.
               </li>
             </ul>
           </section>
 
-          {/* 3. Pengiriman File (DIGITAL DELIVERY) */}
+          {/* 3. Pengiriman File (REVISI: MANUAL KIRIM) */}
           <section>
             <h2 className="text-xl font-bold text-[#3E362E] mb-3">3. Pengiriman File</h2>
             <p>
-              File stiker akan dikirimkan secara otomatis ke email Anda segera setelah pembayaran berhasil diverifikasi
-              oleh sistem (Midtrans). Silakan cek folder <em>Inbox</em> atau <em>Spam/Junk</em> email Anda.
+              File stiker akan dikirimkan oleh Admin ke <strong>Email atau WhatsApp</strong> Anda segera setelah bukti
+              transfer diverifikasi.
+            </p>
+            <p className="mt-2 text-xs italic">
+              *Proses verifikasi biasanya instan, namun bisa memakan waktu hingga 1x24 jam jika trafik sedang padat.
             </p>
           </section>
 
-          {/* 4. Kebijakan Refund (KHUSUS PRODUK DIGITAL - PENTING BUAT MIDTRANS) */}
+          {/* 4. Kebijakan Refund */}
           <section className="bg-[#F3F0E9] p-6 rounded-xl border border-[#E5E0D8]">
             <h2 className="text-xl font-bold text-[#3E362E] mb-3">4. Kebijakan Pengembalian Dana (Refund)</h2>
-            <p className="mb-3">Mengingat sifat produk digital yang dapat diduplikasi, maka:</p>
+            <p className="mb-3">Karena sifat produk digital:</p>
             <ul className="list-disc pl-5 space-y-2">
               <li>
-                <strong>Umum:</strong> Semua penjualan bersifat final. Kami <strong>tidak melayani refund</strong>
-                jika file sudah berhasil dikirim ke email Anda.
+                <strong>Final:</strong> Tidak ada refund jika file sudah dikirimkan ke Anda.
               </li>
               <li>
-                <strong>Pengecualian:</strong> Refund dana penuh hanya dapat diajukan jika:
-                <ul className="list-circle pl-5 mt-1 text-sm">
-                  <li>Terjadi pembayaran ganda (double payment).</li>
-                  <li>File rusak (corrupt) dan kami gagal mengirimkan file pengganti dalam waktu 2x24 jam.</li>
-                  <li>Sistem gagal mengirimkan file ke email Anda lebih dari 24 jam setelah pembayaran sukses.</li>
-                </ul>
+                <strong>Garansi:</strong> Jika file yang diterima rusak (corrupt) atau tidak bisa dibuka, kami akan
+                mengirimkan link pengganti yang baru.
               </li>
-              <li>Untuk mengajukan kendala, silakan hubungi kami dengan menyertakan bukti pembayaran.</li>
             </ul>
           </section>
 
           {/* 5. Kontak */}
           <section>
-            <h2 className="text-xl font-bold text-[#3E362E] mb-3">5. Hubungi Kami</h2>
-            <p>Jika file belum diterima atau ada kendala download, hubungi kami di:</p>
-            <p className="font-bold mt-2 text-[#3E362E]">Email: stickerluma@gmail.com</p>
+            <h2 className="text-xl font-bold text-[#3E362E] mb-3">5. Bantuan</h2>
+            <p>Ada kendala saat download? Hubungi kami di WhatsApp atau Email:</p>
+            <p className="font-bold mt-2 text-[#3E362E]">stickerluma@gmail.com</p>
           </section>
         </div>
       </main>
