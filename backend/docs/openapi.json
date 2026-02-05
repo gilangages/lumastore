@@ -425,7 +425,7 @@
           "Payment"
         ],
         "summary": "Lihat Semua Riwayat Transaksi (Admin)",
-        "description": "NOTE: Endpoint ini belum diproteksi middleware di kode, disarankan segera tambahkan verifyToken.",
+        "description": "Mengambil semua riwayat transaksi",
         "responses": {
           "200": {
             "description": "List Transaksi",
@@ -435,6 +435,99 @@
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/Transaction"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payment/admin/transaction/{order_id}": {
+      "put": {
+        "tags": [
+          "Payment"
+        ],
+        "summary": "Update Status Transaksi (Admin)",
+        "description": "Mengubah status transaksi secara manual (misal: pending -> success).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "order_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "LUMA-WA-173859..."
+            },
+            "description": "ID Order transaksi"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "status"
+                ],
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "example": "success",
+                    "enum": [
+                      "pending",
+                      "success",
+                      "failed"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Status berhasil diubah"
+          },
+          "404": {
+            "description": "Order ID tidak ditemukan"
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Server Health Check",
+        "description": "Cek apakah server berjalan dengan baik (digunakan oleh UptimeRobot/Vercel).",
+        "responses": {
+          "200": {
+            "description": "Server Healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Server is healthy"
+                    },
+                    "uptime": {
+                      "type": "number",
+                      "example": 120.5
+                    }
                   }
                 }
               }
