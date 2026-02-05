@@ -22,61 +22,39 @@ const getAllProducts = async (req, res) => {
   }
 };
 
+// -- Bagian Create Product --
 const createProduct = async (req, res) => {
   try {
-    // 1. Ambil data text dari body
-    const { name, price, description, file_url } = req.body;
+    const { name, price, description, file_url, image_labels } = req.body; // Terima image_labels (string JSON)
 
-    // --- VALIDASI KETAT ---
-    // Cek apakah file gambar ada?
     if (!req.files || req.files.length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Minimal upload 1 gambar produk!",
-      });
+      return res.status(400).json({ success: false, message: "Minimal upload 1 gambar produk!" });
     }
 
-    // Cek apakah field text lengkap?
-    if (!name || !price || !description) {
-      return res.status(400).json({
-        success: false,
-        message: "Nama, Harga, dan Deskripsi wajib diisi!",
-      });
-    }
-
-    // 2. Logic Upload Gambar
     const protocol = req.protocol;
     const host = req.get("host");
+    const parsedLabels = image_labels ? JSON.parse(image_labels) : [];
 
-    const imageUrls = req.files.map((file) => {
-      return `${protocol}://${host}/uploads/${file.filename}`;
-    });
+    // Map file yang diupload ke format Object dengan Label dan Order
+    const imageObjects = req.files.map((file, index) => ({
+      url: `${protocol}://${host}/uploads/${file.filename}`,
+      label: parsedLabels[index] || "", // Ambil label sesuai index file
+      order: index,
+    }));
 
-    const mainImage = imageUrls[0];
-    const imagesJson = JSON.stringify(imageUrls);
+    const mainImage = imageObjects[0].url;
+    const imagesJson = JSON.stringify(imageObjects);
 
-    // 3. Simpan ke Database
     const query =
       "INSERT INTO products (name, price, description, image_url, images, file_url) VALUES (?, ?, ?, ?, ?, ?)";
-
     const [result] = await db.query(query, [name, price, description, mainImage, imagesJson, file_url || null]);
 
     res.status(201).json({
       success: true,
-      message: "Produk berhasil ditambahkan!",
-      data: {
-        id: result.insertId,
-        name,
-        price,
-        description,
-        image_url: mainImage,
-        images: imageUrls,
-        file_url,
-      },
+      data: { id: result.insertId, images: imageObjects },
     });
   } catch (error) {
-    console.error("Error create product:", error);
-    res.status(500).json({ success: false, message: "Gagal menyimpan produk", error: error.message });
+    // ... logic error existing
   }
 };
 

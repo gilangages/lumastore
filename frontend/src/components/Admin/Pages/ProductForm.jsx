@@ -19,6 +19,17 @@ export default function ProductForm() {
 
   // State untuk Preview Full Gambar (Lightbox)
   const [previewUrl, setPreviewUrl] = useState(null);
+  //label img
+  const [imageLabels, setImageLabels] = useState({});
+
+  const moveImage = (index, direction) => {
+    const newFiles = [...files];
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= newFiles.length) return;
+
+    [newFiles[index], newFiles[targetIndex]] = [newFiles[targetIndex], newFiles[index]];
+    setFiles(newFiles);
+  };
 
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -48,6 +59,9 @@ export default function ProductForm() {
       formData.append("name", name);
       formData.append("price", price);
       formData.append("description", description);
+
+      const labelsArray = files.map((_, idx) => imageLabels[idx] || "");
+      formData.append("image_labels", JSON.stringify(labelsArray));
 
       for (let i = 0; i < files.length; i++) {
         formData.append("images", files[i]);
@@ -138,6 +152,26 @@ export default function ProductForm() {
                         className="w-full h-full object-cover cursor-zoom-in hover:scale-105 transition duration-500"
                         onClick={() => setPreviewUrl(url)}
                       />
+
+                      <input
+                        placeholder="Nama Foto (Contoh: Sisi Kiri)"
+                        className="w-full text-xs mt-2 border p-1 rounded"
+                        onChange={(e) => setImageLabels({ ...imageLabels, [idx]: e.target.value })}
+                      />
+                      <div className="flex gap-1 mt-1 justify-center">
+                        <button
+                          type="button"
+                          onClick={() => moveImage(idx, "up")}
+                          className="p-1 bg-gray-100 rounded text-[10px]">
+                          ⬆️
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => moveImage(idx, "down")}
+                          className="p-1 bg-gray-100 rounded text-[10px]">
+                          ⬇️
+                        </button>
+                      </div>
                       {/* Tombol Hapus - Style disamakan (Selalu muncul di HP) */}
                       <button
                         type="button"
