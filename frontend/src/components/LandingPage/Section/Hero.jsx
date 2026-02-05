@@ -37,7 +37,7 @@ export const Hero = () => {
       </div>
 
       {/* 5. Sparkle Tambahan (Tengah atas dikit) */}
-      <div className="absolute top-40 left-1/2 -translate-x-1/2 -mt-10 text-[#D68C76]/40 animate-pulse -z-10">
+      <div className="absolute top-40 left-1/2 -translate-x-1/2 -mt-18 md:-mt-14 text-[#D68C76]/40 animate-pulse -z-10">
         <Sparkles size={32} />
       </div>
 
@@ -45,13 +45,13 @@ export const Hero = () => {
       <div className="absolute top-24 left-1/2 -translate-x-1/2 w-64 h-64 bg-[#E8D5C4]/40 rounded-full blur-[80px] -z-20 mix-blend-multiply"></div>
 
       {/* --- KONTEN UTAMA --- */}
-      <div className="relative z-10">
+      <div className="relative z-10 -mt-12 md:mt-0">
         <span className="bg-white border-2 border-[#3E362E] text-[#3E362E] px-4 py-1.5 rounded-lg text-sm font-bold shadow-[4px_4px_0px_0px_rgba(62,54,46,1)] mb-8 inline-block rotate-[-2deg]">
           ✂️ Printable Stickers
         </span>
 
         <h1 className="text-4xl md:text-6xl font-black text-[#3E362E] mb-6 leading-tight tracking-tight">
-          Stiker Lucu Buatan <br />
+          Stiker Lucu-Lucuan Buatan <br />
           <span className="text-[#8DA399] underline decoration-[#D68C76] decoration-wavy decoration-4 underline-offset-4">
             Sendiri.
           </span>
