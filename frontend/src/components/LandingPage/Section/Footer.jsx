@@ -1,13 +1,20 @@
 import logoLuma from "../../../assets/luma-sticker.png";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { Mail, ArrowRight } from "lucide-react";
 
 export const Footer = () => {
-  // Fungsi simple untuk scroll ke section
-  const scrollToSection = (id) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
+  const navigate = useNavigate();
+
+  const handleNavigation = (id) => {
+    if (location.pathname === "/") {
+      const element = document.getElementById(id);
+      if (element) element.scrollIntoView({ behavior: "smooth" });
+    } else {
+      navigate("/");
+      setTimeout(() => {
+        const element = document.getElementById(id);
+        if (element) element.scrollIntoView({ behavior: "smooth" });
+      }, 100);
     }
   };
 
@@ -40,7 +47,7 @@ export const Footer = () => {
           <ul className="space-y-3 text-[#6B5E51] text-sm font-bold">
             <li>
               <button
-                onClick={() => scrollToSection("products")}
+                onClick={() => handleNavigation("products")}
                 className="hover:text-[#8DA399] transition-colors flex items-center gap-2 group">
                 <ArrowRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />
                 Katalog Stiker
@@ -48,7 +55,7 @@ export const Footer = () => {
             </li>
             <li>
               <button
-                onClick={() => scrollToSection("creator")}
+                onClick={() => handleNavigation("creator")}
                 className="hover:text-[#8DA399] transition-colors flex items-center gap-2 group">
                 <ArrowRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />
                 Tentang Artist
@@ -56,17 +63,19 @@ export const Footer = () => {
             </li>
             <li>
               <button
-                onClick={() => scrollToSection("faq")}
+                onClick={() => handleNavigation("faq")}
                 className="hover:text-[#8DA399] transition-colors flex items-center gap-2 group">
                 <ArrowRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />
                 Tanya Jawab (FAQ)
               </button>
             </li>
             <li>
-              <Link to="/how-to-order" className="hover:text-[#8DA399] transition-colors flex items-center gap-2 group">
+              <button
+                onClick={() => handleNavigation("howto")}
+                className="hover:text-[#8DA399] transition-colors flex items-center gap-2 group">
                 <ArrowRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />
                 Cara Order
-              </Link>
+              </button>
             </li>
           </ul>
         </div>
