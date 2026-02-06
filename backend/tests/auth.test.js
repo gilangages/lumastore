@@ -34,7 +34,9 @@ describe("Admin Auth & Security", () => {
 
   // 2. Test Login Berhasil
   it("should login successfully with correct credentials", async () => {
-    const res = await request(app).post("/api/admin/login").send({ email: "qbdian@gmail.com", password: "abdian123" }); // Sesuai hardcode
+    const res = await request(app)
+      .post("/api/admin/login")
+      .send({ email: "qbdian@gmail.com", password: "QbdianQ2121" }); // Sesuai hardcode
 
     expect(res.statusCode).toEqual(200);
     expect(res.body).toHaveProperty("token");

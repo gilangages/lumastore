@@ -16,6 +16,7 @@ import {
   rectSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { useNavigate } from "react-router";
 
 // --- KOMPONEN ITEM (Sama seperti ProductForm) ---
 function SortablePhoto({ id, item, index, onRemove, onLabelChange, onPreview }) {
@@ -78,9 +79,11 @@ function SortablePhoto({ id, item, index, onRemove, onLabelChange, onPreview }) 
 }
 
 export default function EditProductModal({ product, isOpen, onClose, onSuccess }) {
-  const [token] = useLocalStorage("token", "");
+  const [token, setToken] = useLocalStorage("token", "");
   const [isLoading, setIsLoading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState(null);
+
+  const navigate = useNavigate();
 
   // --- STATE DATA ---
   const [name, setName] = useState("");
@@ -211,6 +214,21 @@ export default function EditProductModal({ product, isOpen, onClose, onSuccess }
       return;
     }
 
+    const rawToken = localStorage.getItem("token");
+    if (!rawToken || rawToken === null || rawToken === "undefined") {
+      await alertError("Sesi anda telah berakhir (Token hilang).");
+      navigate("/admin/login");
+      return;
+    }
+
+    let validToken = rawToken;
+    try {
+      validToken = JSON.parse(rawToken);
+    } catch (e) {
+      console.log(e);
+      validToken = rawToken;
+    }
+
     setIsLoading(true);
 
     try {
@@ -251,8 +269,15 @@ export default function EditProductModal({ product, isOpen, onClose, onSuccess }
       });
 
       // Panggil API
-      const response = await productUpdate(token, product.id, formData);
+      const response = await productUpdate(validToken || token, product.id, formData);
       const responseBody = await response.json();
+
+      if (response.status == 401 || response.status === 403) {
+        await alertError("Gagal update: Sesi habis.");
+        setToken("");
+        navigate("/admin/login");
+        return;
+      }
 
       if (response.ok) {
         await alertSuccess("Produk berhasil diupdate!");

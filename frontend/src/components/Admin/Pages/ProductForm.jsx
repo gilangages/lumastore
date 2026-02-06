@@ -87,7 +87,7 @@ function SortablePhoto({ id, item, index, onRemove, onLabelChange, onPreview }) 
 }
 
 export default function ProductForm() {
-  const [token] = useLocalStorage("token", "");
+  const [_, setToken] = useLocalStorage("token", "");
   const navigate = useNavigate();
 
   const [name, setName] = useState("");
@@ -162,6 +162,21 @@ export default function ProductForm() {
       return;
     }
 
+    const rawToken = localStorage.getItem("token");
+    if (!rawToken || rawToken === null || rawToken === "undefined") {
+      await alertError("Sesi anda telah berakhir (Token hilang).");
+      navigate("/admin/login");
+      return;
+    }
+
+    let validToken = rawToken;
+    try {
+      validToken = JSON.parse(rawToken);
+    } catch (e) {
+      console.log(e);
+      validToken = rawToken;
+    }
+
     setIsLoading(true);
 
     try {
@@ -181,8 +196,15 @@ export default function ProductForm() {
 
       formData.append("image_labels", JSON.stringify(finalLabels));
 
-      const response = await createProduct(token, formData);
+      const response = await createProduct(validToken, formData);
       const responseBody = await response.json();
+
+      if (response.status === 401 || response.status === 403) {
+        await alertError("Sesi kadaluarsa. Silakan login kembali.");
+        setToken("");
+        navigate("/admin/login");
+        return;
+      }
 
       if (response.ok) {
         await alertSuccess("Produk berhasil dibuat!");

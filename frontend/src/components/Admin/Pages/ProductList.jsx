@@ -6,12 +6,15 @@ import { alertConfirm, alertError, alertSuccess } from "../../../lib/alert";
 import AdminProductCard from "../Card/AdminProductCard";
 import { useLocalStorage } from "react-use";
 import EditProductModal from "./EditProductModal";
+import { useNavigate } from "react-router";
 
 export default function ProductList() {
-  const [token, _] = useLocalStorage("token", "");
+  const [token, setToken] = useLocalStorage("token", "");
   const [products, setProducts] = useState([]);
   const [search, _setSearch] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+
+  const navigate = useNavigate();
 
   // --- LOGIC MODAL & CAROUSEL ---
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -69,10 +72,34 @@ export default function ProductList() {
 
   const handleBulkDelete = async () => {
     if (!(await alertConfirm(`Hapus ${selectedIds.length} produk sekaligus?`))) return;
+
+    const rawToken = localStorage.getItem("token");
+    if (!rawToken || rawToken === null || rawToken === "undefined") {
+      await alertError("Sesi anda telah berakhir (Token hilang).");
+      navigate("/admin/login");
+      return;
+    }
+
+    let validToken = rawToken;
+    try {
+      validToken = JSON.parse(rawToken);
+    } catch (e) {
+      console.log(e);
+      validToken = rawToken;
+    }
+
     setIsLoading(true);
     try {
-      const response = await bulkDeleteProducts(token, selectedIds);
+      const response = await bulkDeleteProducts(validToken || token, selectedIds);
       const responseBody = await response.json();
+
+      if (response.status === 401 || response.status === 403) {
+        await alertError("Akses ditolak. Silakan login ulang.");
+        setToken("");
+        navigate("/admin/login");
+        return;
+      }
+
       if (response.ok) {
         await alertSuccess(responseBody.message);
         setSelectedIds([]);
@@ -147,9 +174,32 @@ export default function ProductList() {
 
   async function handleDelete(id) {
     if (!(await alertConfirm("Apakah kamu yakin mau menghapus produk ini?"))) return;
+
+    const rawToken = localStorage.getItem("token");
+    if (!rawToken || rawToken === null || rawToken === "undefined") {
+      await alertError("Sesi anda telah berakhir (Token hilang).");
+      navigate("/admin/login");
+      return;
+    }
+
+    let validToken = rawToken;
     try {
-      const response = await productDelete(token, id);
+      validToken = JSON.parse(rawToken);
+    } catch (e) {
+      console.log(e);
+      validToken = rawToken;
+    }
+
+    try {
+      const response = await productDelete(validToken, id);
       const responseBody = await response.json();
+
+      if (response.status === 401 || response.status === 403) {
+        await alertError("Sesi kadaluarsa. Silakan login kembali.");
+        setToken("");
+        navigate("/admin/login");
+        return;
+      }
 
       if (response.ok) {
         // Logic pesan sekarang dinamis sesuai respon cerdas dari backend tadi
