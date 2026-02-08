@@ -56,7 +56,7 @@ export const FAQ = () => {
             </button>
             <div
               className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                openIndex === idx ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
+                openIndex === idx ? "max-h-125 opacity-100" : "max-h-0 opacity-0"
               }`}>
               <p className="p-6 pt-0 text-[#6B5E51] leading-relaxed font-medium border-t border-dashed border-[#E5E0D8]">
                 {faq.answer}
